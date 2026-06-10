@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    image: syria-offers-api:latest
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://syriaoffers:${POSTGRES_PASSWORD}@postgres:5432/syriaoffers
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "false"
+      SECRET_KEY: ${SECRET_KEY}
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - app-network

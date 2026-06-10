@@ -1,0 +1,24 @@
+# Ignore patterns for Trae IDE
+# Only scan lib folder for this Flutter project
+
+# Ignore everything outside of lib
+/*
+!/lib
+
+# Ignore common Flutter build artifacts and dependencies
+/lib/build/
+/lib/.dart_tool/
+/lib/.packages
+/lib/pubspec.lock
+/lib/ios/Pods/
+/lib/android/.gradle/
+/lib/android/app/build/
+/lib/web/build/
+/lib/macos/Pods/
+/lib/linux/build/
+/lib/windows/build/
+
+# Ignore IDE specific files
+/lib/.vscode/
+/lib/.idea/
+/lib/*.iml

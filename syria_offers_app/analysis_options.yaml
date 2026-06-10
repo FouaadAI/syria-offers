@@ -1,0 +1,64 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+# Generated from .github/skills/dart-tooling-ci/SKILL.md
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# Include the standard Flutter lints as a baseline.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # ─── Required rules per SKILL.md and user request ───
+    always_use_package_imports: true
+    require_trailing_commas: true
+    prefer_const_constructors: true
+    avoid_print: true
+
+    # ─── Additional rules from SKILL.md ───
+    prefer_single_quotes: true
+    unawaited_futures: true
+
+    # ─── Recommended Flutter / Dart lints ───
+    always_declare_return_types: true
+    avoid_relative_lib_imports: true
+    cancel_subscriptions: true
+    close_sinks: true
+    comment_references: true
+    control_flow_in_finally: true
+    depend_on_referenced_packages: true
+    discarded_futures: true
+    empty_statements: true
+    hash_and_equals: true
+    literal_only_boolean_expressions: true
+    no_duplicate_case_values: true
+    no_logic_in_create_state: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    prefer_interpolation_to_compose_strings: true
+    throw_in_finally: true
+    unnecessary_statements: true
+    unrelated_type_equality_checks: true
+    use_build_context_synchronously: true
+    use_full_hex_values_for_flutter_colors: true
+    use_key_in_widget_constructors: true
+    valid_regexps: true
+
+analyzer:
+  errors:
+    todo: ignore
+    missing_required_param: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated_plugin_registrant.dart"
+  language:
+    # Formatting guidance per SKILL.md: dart format . --line-length 80
+    # (Line length is enforced via formatter, not analyzer)
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

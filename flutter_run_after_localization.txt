@@ -1,0 +1,37 @@
+Launching lib\main.dart on 22071212AG in debug mode...
+Running Gradle task 'assembleDebug'...                             40,1s
+Ô£ô Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...           7,7s
+D/FlutterJNI(30338): Beginning load of flutter...
+D/FlutterJNI(30338): flutter (null) was loaded normally!
+I/flutter (30338): [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).
+D/FlutterGeolocator(30338): Attaching Geolocator to activity
+D/FlutterRenderer(30338): Width is zero. 0,0
+Syncing files to device 22071212AG...                              166ms
+
+Flutter run key commands.
+r Hot reload. ­ƒöÑ­ƒöÑ­ƒöÑ
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on 22071212AG is available at: http://127.0.0.1:59176/bhAQnODgobU=/
+The Flutter DevTools debugger and profiler on 22071212AG is available at: http://127.0.0.1:59176/bhAQnODgobU=/devtools/?uri=ws://127.0.0.1:59176/bhAQnODgobU=/ws
+W/yria_offers_app(30338): userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+I/yria_offers_app(30338): Background concurrent mark compact GC freed 18MB AllocSpace bytes, 7(172KB) LOS objects, 75% free, 2471KB/9886KB, paused 260us,6.889ms total 51.250ms
+D/FlutterGeolocator(30338): Creating service.
+D/FlutterGeolocator(30338): Binding to location service.
+D/ProfileInstaller(30338): Installing profile for com.syriaoffers.syria_offers_app
+I/Choreographer(30338): Skipped 61 frames!  The application may be doing too much work on its main thread.
+D/UserSceneDetector(30338): invoke error.
+D/DecorViewImmersiveImpl(30338): onAttachedToWindow:com.syriaoffers.syria_offers_app/com.syriaoffers.syria_offers_app.MainActivity
+I/WindowExtensionsImpl(30338): Initializing Window Extensions, vendor API level=6, activity embedding enabled=true
+D/FlutterRenderer(30338): Width is zero. 0,0
+D/ActivityThread(30338): Fail to check app heapsize due to java.lang.NoSuchMethodException: dalvik.system.VMRuntime.getBlockingGcCountForAlloc []
+D/FlutterGeolocator(30338): Geolocator foreground service connected
+D/FlutterGeolocator(30338): Initializing Geolocator services
+D/FlutterGeolocator(30338): Flutter engine connected. Connected engine count 1
+D/FlutterRenderer(30338): Width is zero. 0,0
+I/yria_offers_app(30338): Compiler allocated 6713KB to compile void android.view.ViewRootImpl.performTraversals()

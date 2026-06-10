@@ -1,0 +1,102 @@
+name: PR Template Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  validate-pr-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR body sections and checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = (context.payload.pull_request.body || "").trim();
+            const errors = [];
+
+            function escapeRegExp(value) {
+              return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            }
+
+            function requirePattern(regex, message) {
+              if (!regex.test(body)) {
+                errors.push(message);
+              }
+            }
+
+            function sectionBetween(startHeading, endHeading) {
+              const start = body.indexOf(startHeading);
+              if (start === -1) return "";
+              const afterStart = start + startHeading.length;
+              const end = endHeading ? body.indexOf(endHeading, afterStart) : body.length;
+              const raw = end === -1 ? body.slice(afterStart) : body.slice(afterStart, end);
+              return raw.trim();
+            }
+
+            const requiredHeadings = [
+              "### 🗃 Issue Or Explanation for this PR. (What is it supposed to do and Why is needed)",
+              "### ✅ Checklist",
+              "### 🕵️‍♂️ Notes for Code Reviewer",
+              "### 🙈 Screenshots",
+              "### 👯‍♀️ Paired with",
+            ];
+
+            for (const heading of requiredHeadings) {
+              if (!body.includes(heading)) {
+                errors.push(`Missing section: ${heading}`);
+              }
+            }
+
+            requirePattern(/^- Feature:\s*\S.+/m, "Missing or empty `- Feature:` line.");
+            requirePattern(/^- UI:\s*\S.+/m, "Missing or empty `- UI:` line.");
+
+            const checklistItems = [
+              "Issue Or Task detail are up to date for people to QA",
+              "I have functionally tested all my changes",
+              "I handled the code format",
+              "I have Tested on Android (only App)",
+              "I have Tested on iOS (only App)",
+            ];
+
+            for (const item of checklistItems) {
+              const regex = new RegExp(`^- \\[(x|X)\\] ${escapeRegExp(item)}\\s*$`, "m");
+              if (!regex.test(body)) {
+                errors.push(`Checklist item must be checked [x]: ${item}`);
+              }
+            }
+
+            const notesSection = sectionBetween(
+              "### 🕵️‍♂️ Notes for Code Reviewer",
+              "### 🙈 Screenshots",
+            );
+            if (!notesSection || /^Example:/i.test(notesSection)) {
+              errors.push("Notes for Code Reviewer must contain actual reviewer notes, not only the example.");
+            }
+
+            const screenshotSection = sectionBetween(
+              "### 🙈 Screenshots",
+              "### 👯‍♀️ Paired with",
+            );
+            const hasNoUi = /No UI/i.test(screenshotSection);
+            const hasImage = /!\[[^\]]*\]\([^)]+\)/.test(screenshotSection);
+            const hasBeforeAfter = /before/i.test(screenshotSection) && /after/i.test(screenshotSection);
+            if (!screenshotSection || (!hasNoUi && !hasImage && !hasBeforeAfter)) {
+              errors.push("Screenshots section must include `No UI`, markdown image(s), or before/after evidence.");
+            }
+
+            const pairedSection = sectionBetween("### 👯‍♀️ Paired with", null);
+            if (!pairedSection) {
+              errors.push("Paired with section cannot be empty (e.g. `Solo`).");
+            }
+
+            if (errors.length > 0) {
+              core.setFailed(["PR template validation failed:", ...errors.map(e => `- ${e}`)].join("\n"));
+            } else {
+              core.info("PR template validation passed.");
+            }

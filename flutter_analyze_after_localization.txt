@@ -1,0 +1,76 @@
+Analyzing uffria_app...                                         
+
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\add_offer_screen.dart:53:45 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\add_offer_screen.dart:106:45 - unnecessary_non_null_assertion
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\admin\admin_dashboard_screen.dart:23:25 - unawaited_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\admin_dashboard_screen.dart:24:17 - use_build_context_synchronously
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\admin_login_screen.dart:15:45 - unnecessary_non_null_assertion
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\admin\admin_login_screen.dart:42:29 - unawaited_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\admin_login_screen.dart:43:21 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\admin_login_screen.dart:47:40 - use_build_context_synchronously
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\booking_list_screen.dart:11:45 - unnecessary_non_null_assertion
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\booking_list_screen.dart:29:42 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\admin\booking_list_screen.dart:32:31 - unawaited_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\booking_list_screen.dart:32:47 - use_build_context_synchronously
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\admin\offer_list_screen.dart:22:5 - discarded_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\offer_list_screen.dart:37:49 - unnecessary_non_null_assertion
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\admin\offer_list_screen.dart:54:5 - unawaited_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\offer_list_screen.dart:58:45 - unnecessary_non_null_assertion
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\admin\offer_list_screen.dart:77:48 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\admin\offer_list_screen.dart:91:7 - unawaited_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\admin\offer_list_screen.dart:97:45 - unnecessary_non_null_assertion
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\auth\forgot_password_screen.dart:65:41 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\login_screen.dart:49:21 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\login_screen.dart:51:21 - unawaited_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\auth\login_screen.dart:118:27 - discarded_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\auth\phone_login_screen.dart:55:30 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\phone_login_screen.dart:87:19 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\phone_login_screen.dart:135:21 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\phone_login_screen.dart:138:21 - unawaited_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\auth\phone_login_screen.dart:146:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\auth\phone_login_screen.dart:152:28 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\set_password_screen.dart:63:21 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\set_password_screen.dart:65:21 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\set_password_screen.dart:68:32 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\auth\verify_email_screen.dart:56:31 - unawaited_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\booking_confirmation_screen.dart:87:29 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\booking_confirmation_screen.dart:96:29 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\chat_screen.dart:46:27 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\chat_screen.dart:168:21 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\chat_screen.dart:196:37 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\cultural_sites_screen.dart:86:21 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\favorites_screen.dart:23:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\favorites_screen.dart:53:15 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\favorites_screen.dart:89:37 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\home_screen.dart:42:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\home_screen.dart:45:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\home_screen.dart:46:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\home_screen.dart:156:25 - discarded_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\home_screen.dart:167:27 - unawaited_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\home_screen.dart:477:19 - discarded_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\merchant\merchant_add_offer_screen.dart:37:45 - unnecessary_non_null_assertion
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\merchant\merchant_add_offer_screen.dart:70:28 - use_build_context_synchronously
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\merchant\merchant_add_offer_screen.dart:78:45 - unnecessary_non_null_assertion
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\merchant\merchant_booking_list_screen.dart:40:27 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\merchant\merchant_dashboard_screen.dart:33:17 - unawaited_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:47:45 - unnecessary_non_null_assertion
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:61:27 - unawaited_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:141:45 - unnecessary_non_null_assertion
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:142:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:149:58 - discarded_futures
+warning - The '!' will have no effect because the receiver can't be null - syria_offers_app\lib\screens\merchant\merchant_offer_list_screen.dart:156:45 - unnecessary_non_null_assertion
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\offer_detail_screen.dart:34:7 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\offer_detail_screen.dart:252:5 - discarded_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\offer_detail_screen.dart:364:37 - unawaited_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\offers_screen.dart:25:5 - discarded_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\payment\payment_screen.dart:30:32 - use_build_context_synchronously
+   info - Missing an 'await' for the 'Future' computed by this expression - syria_offers_app\lib\screens\payment\payment_screen.dart:33:21 - unawaited_futures
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\payment\payment_screen.dart:34:13 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\payment\payment_screen.dart:40:32 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\payment\payment_screen.dart:45:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - syria_offers_app\lib\screens\payment\payment_screen.dart:50:28 - use_build_context_synchronously
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\screens\payment\payment_screen.dart:59:5 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\widgets\flash_deal_card.dart:48:19 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function - syria_offers_app\lib\widgets\offer_card.dart:25:21 - discarded_futures
+
+72 issues found. (ran in 81.1s)
