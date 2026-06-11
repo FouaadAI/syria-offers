@@ -4,11 +4,20 @@ set -e
 echo "[ENTRYPOINT] Running database setup..."
 cd /app
 python -c "
+from sqlalchemy import inspect
 from app.core.database import engine, Base, SessionLocal
 from app.main import create_default_user, seed_locations
 from app.core.config import settings
 
-Base.metadata.create_all(bind=engine)
+inspector = inspect(engine)
+existing_tables = inspector.get_table_names()
+
+if not existing_tables:
+    Base.metadata.create_all(bind=engine)
+    print('[ENTRYPOINT] Database initialized.')
+else:
+    print('[ENTRYPOINT] Tables already exist — skipping create_all().')
+
 if settings.DEBUG:
     create_default_user()
 seed_locations()
