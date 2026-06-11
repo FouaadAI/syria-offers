@@ -9,6 +9,7 @@ from slowapi.util import get_remote_address
 from app.core.database import engine, Base, SessionLocal
 from app.core.config import settings
 from app.models.user import User
+from app.models.location import Location
 from app.api.v1 import categories, offers, bookings
 from app.api.v1 import recommendations
 from app.api.v1 import flash_deals
@@ -62,12 +63,34 @@ def create_default_user():
         db.close()
 
 
-# --------------- Tabellen anlegen ---------------
+# --------------- Tabellen anlegen + Seed data ---------------
 Base.metadata.create_all(bind=engine)
 
 # Gastbenutzer anlegen (nur im Entwicklungsmodus)
 if settings.DEBUG:
     create_default_user()
+
+# Syria locations aus JSON in DB importieren (idempotent)
+def seed_locations():
+    """Import planner_data.json into PostgreSQL on first startup."""
+    db = SessionLocal()
+    try:
+        from app.services.location_service import import_locations_from_json
+        from app.models.location import Location
+        count = db.query(Location).count()
+        if count == 0:
+            import os
+            json_path = os.path.join(os.path.dirname(__file__), "data", "planner_data.json")
+            imported = import_locations_from_json(db, json_path)
+            print(f"[OK] {imported} locations seeded into database")
+        else:
+            print(f"[INFO] Database already has {count} locations — skipping seed")
+    except Exception as e:
+        print(f"[WARN] Location seed failed: {e}")
+    finally:
+        db.close()
+
+seed_locations()
 
 
 # ========== FastAPI-App erstellen ==========

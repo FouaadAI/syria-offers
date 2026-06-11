@@ -10,27 +10,50 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.core.gemini_client import get_genai_client
 from app.models.offer import Offer, Category
+from app.models.location import Location
 from app.schemas.offer import OfferResponse
+from app.schemas.location import LocationOut
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/chatbot", tags=["المساعد الذكي"])
 genai_client = get_genai_client()
 
+
 class ChatResponse(BaseModel):
     reply: str
     offers: List[OfferResponse] = []
+    locations: List[LocationOut] = []
     plan_id: Optional[int] = None
     session_id: str = ""
 
+
+# ---------------------------------------------------------------------------
+#  Function declarations for Gemini
+# ---------------------------------------------------------------------------
+
 search_offers_function = {
     "name": "search_offers",
-    "description": "Search for offers by category, max price, and keywords in Syria.",
+    "description": "Search for active offers by category, max price, and keywords in Syria.",
     "parameters": {
         "type": "object",
         "properties": {
-            "category": {"type": "string", "description": "Category (Arabic/English)"},
-            "max_price": {"type": "number", "description": "Max price in SP"},
-            "keywords": {"type": "string", "description": "Search terms"}
+            "category": {"type": "string", "description": "Category (Arabic or English)"},
+            "max_price": {"type": "number", "description": "Max price in Syrian Pounds"},
+            "keywords": {"type": "string", "description": "Search terms in any language"}
+        },
+        "required": []
+    }
+}
+
+search_locations_function = {
+    "name": "search_locations",
+    "description": "Search the Syria tourism database for places, landmarks, restaurants, museums, neighbourhoods, etc. Use when the user asks about sightseeing, things to do, tourist attractions, or specific cities.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "City name (Arabic or English). Examples: Damascus, دمشق, Aleppo, حلب"},
+            "category": {"type": "string", "description": "Category like history, food, nature, shopping, museum, religious, beach, mountain, hotel, wellness"},
+            "keywords": {"type": "string", "description": "Free-text keywords to match name or description"}
         },
         "required": []
     }
@@ -38,12 +61,12 @@ search_offers_function = {
 
 plan_trip_function = {
     "name": "plan_trip",
-    "description": "Create a detailed multi-day travel itinerary for Syria.",
+    "description": "Create a detailed multi-day travel itinerary for Syria using the official tourism database.",
     "parameters": {
         "type": "object",
         "properties": {
-            "interests": {"type": "string", "description": "Interests: history,food,nature,shopping,adventure,art"},
-            "days": {"type": "integer", "description": "Number of days (3-7, default 5)"},
+            "interests": {"type": "string", "description": "Comma-separated interests: history,food,nature,shopping,adventure,art,religious,beach,mountain,hotel,wellness"},
+            "days": {"type": "integer", "description": "Number of days (1–14, default 5)"},
             "start_city": {"type": "string", "description": "Starting city, default Damascus"}
         },
         "required": ["interests", "days"]
@@ -51,6 +74,11 @@ plan_trip_function = {
 }
 
 sessions: Dict[str, list] = {}
+
+
+# ---------------------------------------------------------------------------
+#  DB helpers
+# ---------------------------------------------------------------------------
 
 def search_offers_in_db(db: Session, category=None, max_price=None, keywords=None):
     filters = [Offer.is_active == True, Offer.end_date > datetime.utcnow()]
@@ -66,11 +94,67 @@ def search_offers_in_db(db: Session, category=None, max_price=None, keywords=Non
         query = query.filter(Offer.title_ar.ilike(term) | Offer.title_en.ilike(term) | Offer.description_ar.ilike(term) | Offer.description_en.ilike(term))
     return query.order_by(Offer.offer_price).limit(5).all()
 
+
+def search_locations_in_db(db: Session, city=None, category=None, keywords=None):
+    q = db.query(Location)
+    if city:
+        from sqlalchemy import func
+        c = city.strip().lower()
+        q = q.filter((func.lower(Location.city_en) == c) | (func.lower(Location.city_ar) == c))
+    if category:
+        q = q.filter(Location.category == category.lower())
+    if keywords:
+        from sqlalchemy import func
+        term = f"%{keywords}%"
+        q = q.filter(
+            Location.name_ar.ilike(term) |
+            Location.name_en.ilike(term) |
+            Location.description_ar.ilike(term) |
+            Location.description_en.ilike(term)
+        )
+    return q.limit(8).all()
+
+
+# ---------------------------------------------------------------------------
+#  System prompt (multilingual, professional)
+# ---------------------------------------------------------------------------
+
+SYSTEM_PROMPT_TEMPLATE = """You are Offria — a multilingual, expert Syria travel assistant.
+
+LANGUAGE RULE (strict):
+• Detect the user's message language.
+• If Arabic → reply ONLY in Modern Standard Arabic (الفصحى). Never use English or German.
+• If German → reply ONLY in German. Never use English or Arabic.
+• If English → reply ONLY in English. Never use Arabic or German.
+• Never mix languages inside one reply.
+
+CAPABILITIES:
+1. Offers — restaurants, hotels, activities with discounts.
+2. Locations — tourist sites, museums, neighbourhoods, nature spots from the official Syria database.
+3. Trip Planning — multi-day itineraries with realistic routing.
+
+TONE:
+• Friendly, enthusiastic, concise.
+• For locations: describe what the visitor will experience in 1–2 sentences.
+• When listing places, mention city, category, and a highlight.
+
+WHEN TO CALL FUNCTIONS:
+• User asks about prices, discounts, deals → call search_offers.
+• User asks about sightseeing, places to visit, neighbourhoods, landmarks → call search_locations.
+• User asks for a full itinerary or travel plan → call plan_trip.
+"""
+
+
+# ---------------------------------------------------------------------------
+#  Main endpoint
+# ---------------------------------------------------------------------------
+
 @router.get("/", response_model=ChatResponse)
 async def chat(query: str, session_id: str = Query(""), db: Session = Depends(get_db)):
     sid = session_id.strip() or str(uuid.uuid4())
     history = sessions.get(sid, [])
 
+    # Detect language
     has_arabic = any('\u0600' <= c <= '\u06ff' for c in query)
     has_german = any(c in 'äöüßÄÖÜ' for c in query)
     if has_arabic:
@@ -80,24 +164,12 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
     else:
         lang = "en"
 
-    tools = types.Tool(function_declarations=[search_offers_function, plan_trip_function])
-
-    system_prompt = (
-        "You are a multilingual Syria travel assistant for the Offria app. "
-        "**CRITICAL LANGUAGE RULE:** Detect the language of the user's message. "
-        "If the message is in Arabic, answer ONLY in Arabic. "
-        "If the message is in English, answer ONLY in English. "
-        "If the message is in German, answer ONLY in German. "
-        "Never mix languages. "
-        "**Trip planning:** When the user requests a trip, call plan_trip IMMEDIATELY. "
-        "**Offers:** When the user asks about restaurants, parks, museums, etc., call search_offers. "
-        "Be friendly and enthusiastic."
-    )
+    tools = types.Tool(function_declarations=[search_offers_function, search_locations_function, plan_trip_function])
 
     config = types.GenerateContentConfig(
         tools=[tools],
-        system_instruction=system_prompt,
-        temperature=0.1,
+        system_instruction=SYSTEM_PROMPT_TEMPLATE,
+        temperature=0.2,
     )
 
     contents = []
@@ -115,59 +187,107 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
                     fc = part.function_call
                     break
 
-        if fc:
-            if fc.name == "search_offers":
-                args = fc.args
-                offers = search_offers_in_db(db, category=args.get("category"), max_price=args.get("max_price"), keywords=args.get("keywords"))
-                offers_resp = [OfferResponse.model_validate(o) for o in offers]
-                reply = (f"✅ وجدت لك {len(offers_resp)} عروض!" if has_arabic and offers_resp
-                         else f"✅ Found {len(offers_resp)} offers!" if offers_resp
-                         else ("❌ لم أجد عروضاً." if has_arabic else "❌ No offers found."))
-                history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
-                sessions[sid] = history
-                return ChatResponse(reply=reply, offers=offers_resp, session_id=sid)
+        # ------------------------------------------------ search_offers -----
+        if fc and fc.name == "search_offers":
+            args = fc.args
+            offers = search_offers_in_db(db, category=args.get("category"), max_price=args.get("max_price"), keywords=args.get("keywords"))
+            offers_resp = [OfferResponse.model_validate(o) for o in offers]
+            if lang == "ar":
+                reply = f"✅ وجدت لك {len(offers_resp)} عروض!" if offers_resp else "❌ لم أجد عروضاً مطابقة."
+            elif lang == "de":
+                reply = f"✅ Ich habe {len(offers_resp)} Angebote gefunden!" if offers_resp else "❌ Keine passenden Angebote gefunden."
+            else:
+                reply = f"✅ Found {len(offers_resp)} offers!" if offers_resp else "❌ No matching offers found."
 
-            elif fc.name == "plan_trip":
-                args = fc.args
-                from app.services.travel_planner import generate_travel_plan
-                days = min(max(int(args.get("days", 5)), 1), 7)
-                preferences = {
-                    "interests": args.get("interests", "history,food"),
-                    "start_city": args.get("start_city", "Damascus"),
-                }
-                plan = generate_travel_plan(
-                    preferences=preferences,
-                    days=days,
-                    lang=lang,
-                )
-                lines = []
-                if has_arabic:
-                    lines.append("🗺️ **خطة رحلتك إلى سوريا** 🌟\n")
-                else:
-                    lines.append("🗺️ **Your Syria Travel Itinerary** 🌟\n")
-                for day in plan["plan"]:
-                    lines.append(f"\n📅 **{'اليوم' if has_arabic else 'Day'} {day['day']}**")
-                    for a in day["activities"]:
-                        lines.append(f"  ⏰ {a['time']} – {a['title']} ({a['location']})")
-                lines.append("")
-                lines.append("💡 يمكنك تصدير الخطة إلى تقويم هاتفك بالضغط على الزر أدناه." if has_arabic else "💡 Export to your calendar using the button below.")
-                reply_text = "\n".join(lines)
+            history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
+            sessions[sid] = history
+            return ChatResponse(reply=reply, offers=offers_resp, session_id=sid)
 
-                from app.models.travel_plan import TravelPlan
-                db_plan = TravelPlan(preferences=args, days=args.get("days", 5), plan_data=plan)
-                db.add(db_plan)
-                db.commit()
-                db.refresh(db_plan)
+        # ------------------------------------------------ search_locations ---
+        if fc and fc.name == "search_locations":
+            args = fc.args
+            locs = search_locations_in_db(db, city=args.get("city"), category=args.get("category"), keywords=args.get("keywords"))
+            locs_resp = [LocationOut.model_validate(l) for l in locs]
 
-                history += [{"role":"user","text":query},{"role":"assistant","text":reply_text}]
-                sessions[sid] = history
-                return ChatResponse(reply=reply_text, plan_id=db_plan.id, session_id=sid)
+            if lang == "ar":
+                reply = f"✅ وجدت {len(locs_resp)} أماكن!" if locs_resp else "❌ لم أجد أماكن مطابقة."
+            elif lang == "de":
+                reply = f"✅ Ich habe {len(locs_resp)} Orte gefunden!" if locs_resp else "❌ Keine passenden Orte gefunden."
+            else:
+                reply = f"✅ Found {len(locs_resp)} places!" if locs_resp else "❌ No matching places found."
 
-        text = response.candidates[0].content.parts[0].text if response.candidates else ("لم أفهم" if has_arabic else "I didn't understand")
+            # Build richer reply by asking Gemini to describe the found places
+            if locs_resp:
+                place_names = ", ".join([l.name_ar or l.name_en or "" for l in locs_resp[:5]])
+                desc_prompt = f"The user searched for places. Briefly describe these locations in {'Arabic' if lang=='ar' else 'German' if lang=='de' else 'English'}: {place_names}. Keep it under 3 sentences."
+                try:
+                    desc_resp = genai_client.models.generate_content(
+                        model="gemini-2.5-flash-lite",
+                        contents=desc_prompt,
+                        config=types.GenerateContentConfig(temperature=0.3),
+                    )
+                    if desc_resp.candidates:
+                        reply = desc_resp.candidates[0].content.parts[0].text.strip()
+                except Exception:
+                    pass
+
+            history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
+            sessions[sid] = history
+            return ChatResponse(reply=reply, locations=locs_resp, session_id=sid)
+
+        # ------------------------------------------------ plan_trip ---------
+        if fc and fc.name == "plan_trip":
+            args = fc.args
+            from app.services.travel_planner import generate_travel_plan
+            days = min(max(int(args.get("days", 5)), 1), 14)
+            preferences = {
+                "interests": args.get("interests", "history,food"),
+                "start_city": args.get("start_city", "Damascus"),
+                "lang": lang,
+            }
+            plan = generate_travel_plan(db, preferences=preferences, days=days, lang=lang)
+
+            lines = []
+            if lang == "ar":
+                lines.append("🗺️ **خطة رحلتك إلى سوريا** 🌟\n")
+            elif lang == "de":
+                lines.append("🗺️ **Ihr Syrien-Reiseplan** 🌟\n")
+            else:
+                lines.append("🗺️ **Your Syria Travel Itinerary** 🌟\n")
+
+            for day in plan["plan"]:
+                lines.append(f"\n📅 **{'اليوم' if lang=='ar' else 'Tag' if lang=='de' else 'Day'} {day['day']}**")
+                for a in day["activities"]:
+                    lines.append(f"  ⏰ {a['time']} – {a['title']} ({a['location']})")
+
+            lines.append("")
+            if lang == "ar":
+                lines.append("💡 يمكنك تصدير الخطة إلى تقويم هاتفك بالضغط على الزر أدناه.")
+            elif lang == "de":
+                lines.append("💡 Sie können den Plan über den Button unten in Ihren Kalender exportieren.")
+            else:
+                lines.append("💡 Export to your calendar using the button below.")
+
+            reply_text = "\n".join(lines)
+
+            from app.models.travel_plan import TravelPlan
+            db_plan = TravelPlan(preferences=preferences, days=days, plan_data=plan)
+            db.add(db_plan)
+            db.commit()
+            db.refresh(db_plan)
+
+            history += [{"role":"user","text":query},{"role":"assistant","text":reply_text}]
+            sessions[sid] = history
+            return ChatResponse(reply=reply_text, plan_id=db_plan.id, session_id=sid)
+
+        # ------------------------------------------------ plain text --------
+        text = response.candidates[0].content.parts[0].text if response.candidates else (
+            "لم أفهم طلبك." if lang == "ar" else "Ich habe das nicht verstanden." if lang == "de" else "I didn't understand."
+        )
         history += [{"role":"user","text":query},{"role":"assistant","text":text}]
         sessions[sid] = history
         return ChatResponse(reply=text, session_id=sid)
 
     except Exception as e:
-        err = f"⚠️ خطأ: {str(e)}" if has_arabic else f"⚠️ Error: {str(e)}"
+        err = f"⚠️ خطأ: {str(e)}" if lang == "ar" else f"⚠️ Fehler: {str(e)}" if lang == "de" else f"⚠️ Error: {str(e)}"
         return ChatResponse(reply=err, session_id=sid)

@@ -13,12 +13,13 @@ router = APIRouter(prefix="/travel-planner", tags=["Travel Planner"])
 
 @router.post("/generate", response_model=TravelPlanResponse)
 def create_travel_plan(req: TravelPlanRequest, db: Session = Depends(get_db)):
-    ctx = build_context(db)
+    start_city = req.preferences.get("start_city", "Damascus")
+    ctx = build_context(db, req.preferences, start_city, req.days)
     if not ctx:
         raise HTTPException(400, "No locations available in database.")
 
     lang = req.preferences.get("lang", "ar")
-    plan_data = generate_travel_plan(req.preferences, req.days, ctx, lang=lang)
+    plan_data = generate_travel_plan(db, req.preferences, req.days, lang=lang)
 
     db_plan = TravelPlan(
         preferences=req.preferences,
