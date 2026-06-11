@@ -17,5 +17,7 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run with gunicorn + uvicorn workers for production
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000", "--timeout", "120"]
+# Entrypoint script handles DB setup then starts Gunicorn
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

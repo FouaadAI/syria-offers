@@ -63,16 +63,9 @@ def create_default_user():
         db.close()
 
 
-# --------------- Tabellen anlegen + Seed data ---------------
-Base.metadata.create_all(bind=engine)
-
-# Gastbenutzer anlegen (nur im Entwicklungsmodus)
-if settings.DEBUG:
-    create_default_user()
-
-# Syria locations aus JSON in DB importieren (idempotent)
+# --------------- Seed locations (called by entrypoint.sh, NOT at import time) ---------------
 def seed_locations():
-    """Import planner_data.json into PostgreSQL on first startup."""
+    """Import planner_data.json into PostgreSQL on first startup (idempotent)."""
     db = SessionLocal()
     try:
         from app.services.location_service import import_locations_from_json
@@ -90,7 +83,9 @@ def seed_locations():
     finally:
         db.close()
 
-seed_locations()
+
+# Re-export for entrypoint usage
+__all__ = ["app", "create_default_user", "seed_locations"]
 
 
 # ========== FastAPI-App erstellen ==========
