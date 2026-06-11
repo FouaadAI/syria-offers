@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from google import genai
 from google.genai import types
 from app.core.config import settings
+from app.core.gemini_client import get_genai_client
 from app.models.offer import Offer
 
-genai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+genai_client = get_genai_client()
 
 def build_context(db: Session) -> str:
     """

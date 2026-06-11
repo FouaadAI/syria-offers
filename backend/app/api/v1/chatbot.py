@@ -8,12 +8,13 @@ import json, uuid
 
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.gemini_client import get_genai_client
 from app.models.offer import Offer, Category
 from app.schemas.offer import OfferResponse
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/chatbot", tags=["المساعد الذكي"])
-genai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+genai_client = get_genai_client()
 
 class ChatResponse(BaseModel):
     reply: str
@@ -128,16 +129,16 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
 
             elif fc.name == "plan_trip":
                 args = fc.args
-                from app.services.travel_planner import build_context, generate_travel_plan
-                ctx = build_context(db)
-                if not ctx:
-                    return ChatResponse(reply="⚠️ لا توجد بيانات مواقع كافية." if has_arabic else "⚠️ Not enough location data.", session_id=sid)
-
+                from app.services.travel_planner import generate_travel_plan
+                days = min(max(int(args.get("days", 5)), 1), 7)
+                preferences = {
+                    "interests": args.get("interests", "history,food"),
+                    "start_city": args.get("start_city", "Damascus"),
+                }
                 plan = generate_travel_plan(
-                    preferences={"interests": args.get("interests","history,food").split(","), "start_city": args.get("start_city","Damascus")},
-                    days=min(max(int(args.get("days",5)),1),7),
-                    context=ctx,
-                    lang=lang
+                    preferences=preferences,
+                    days=days,
+                    lang=lang,
                 )
                 lines = []
                 if has_arabic:
@@ -153,7 +154,7 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
                 reply_text = "\n".join(lines)
 
                 from app.models.travel_plan import TravelPlan
-                db_plan = TravelPlan(preferences=args, days=args.get("days",5), plan_data=plan)
+                db_plan = TravelPlan(preferences=args, days=args.get("days", 5), plan_data=plan)
                 db.add(db_plan)
                 db.commit()
                 db.refresh(db_plan)

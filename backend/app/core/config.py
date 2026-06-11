@@ -14,6 +14,8 @@ class Settings:
     DATABASE_POOL_SIZE: int = int(os.getenv("DATABASE_POOL_SIZE", "10"))
     DATABASE_MAX_OVERFLOW: int = int(os.getenv("DATABASE_MAX_OVERFLOW", "20"))
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    HTTP_PROXY: str = os.getenv("HTTP_PROXY", "")
+    HTTPS_PROXY: str = os.getenv("HTTPS_PROXY", "")
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

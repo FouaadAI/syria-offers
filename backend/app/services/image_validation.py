@@ -2,10 +2,11 @@ import json
 from google import genai
 from google.genai import types
 from app.core.config import settings
+from app.core.gemini_client import get_genai_client
 from PIL import Image, UnidentifiedImageError
 import io
 
-genai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+genai_client = get_genai_client()
 
 def validate_image(image_bytes: bytes, category_name: str, mime_type: str = "image/jpeg") -> dict:
     """
