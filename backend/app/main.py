@@ -62,9 +62,8 @@ def create_default_user():
         db.close()
 
 
-# --------------- Tabellen anlegen (nur im Entwicklungsmodus) ---------------
-if settings.DEBUG:
-    Base.metadata.create_all(bind=engine)
+# --------------- Tabellen anlegen ---------------
+Base.metadata.create_all(bind=engine)
 
 # Gastbenutzer anlegen (nur im Entwicklungsmodus)
 if settings.DEBUG:
