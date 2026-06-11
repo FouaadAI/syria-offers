@@ -36,106 +36,94 @@ genai_client = get_genai_client()
 
 def build_context(preferences: dict, start_city: str = "Damascus", days: int = 5) -> str:
     """
-    Creates a detailed, structured prompt block containing:
-      - Selected places matching user interests
-      - Real distances / drive times between cities
-      - Nearby clustering hints
+    Builds a compact, high-quality prompt context.
+    Limits to ~15 places so Gemini answers quickly (< 10 s) even via proxy.
     """
     interests = [i.strip().lower() for i in preferences.get("interests", "history,food").split(",")]
+    max_places = 15
 
-    # collect matching places
-    selected: List[dict] = []
+    # --- 1. Collect places, prioritise start-city, then nearby cities ---
+    scored: List[Tuple[int, dict]] = []
+    seen = set()
+
+    def _add_place(p, score: int):
+        if p.name_en in seen:
+            return
+        seen.add(p.name_en)
+        # truncate description to first sentence to keep prompt small
+        for desc in (p.description_en, p.description_de, p.description_ar):
+            if desc:
+                short = desc.split(".")[0] + "."
+                break
+        else:
+            short = ""
+        scored.append((score, {
+            "name_ar": p.name_ar,
+            "name_de": p.name_de,
+            "name_en": p.name_en,
+            "city_ar": p.city_ar,
+            "city_en": p.city_en,
+            "lat": p.lat,
+            "lng": p.lng,
+            "category": p.category,
+            "description": short,
+            "duration": p.visit_duration,
+            "best_time": p.best_time,
+        }))
+
+    # Start-city places get highest score
+    for p in places_in_city(start_city):
+        _add_place(p, score=100)
+
+    # Interest-matching places (score by relevance)
     for interest in interests:
         for p in places_by_interest(interest):
-            selected.append({
-                "name_ar": p.name_ar,
-                "name_de": p.name_de,
-                "name_en": p.name_en,
-                "city_en": p.city_en,
-                "city_ar": p.city_ar,
-                "lat": p.lat,
-                "lng": p.lng,
-                "category": p.category,
-                "description_ar": p.description_ar,
-                "description_de": p.description_de,
-                "description_en": p.description_en,
-                "duration": p.visit_duration,
-                "price": p.price_range,
-                "opening": p.opening_hours,
-                "best_time": p.best_time,
-                "nearby": p.nearby_places,
-            })
+            # bonus if in start city, otherwise base score by distance tier
+            if p.city_en == start_city or p.city_ar == start_city:
+                _add_place(p, score=90)
+            else:
+                km, _ = get_distance(start_city, p.city_ar)
+                if km <= 0:
+                    km = 999
+                if km < 80:
+                    _add_place(p, score=70)
+                elif km < 150:
+                    _add_place(p, score=50)
+                else:
+                    _add_place(p, score=30)
 
-    # deduplicate
-    seen = set()
-    uniq = []
-    for s in selected:
-        key = s["name_en"]
-        if key not in seen:
-            seen.add(key)
-            uniq.append(s)
-    selected = uniq
+    # Sort by score descending, keep top N
+    scored.sort(key=lambda x: x[0], reverse=True)
+    selected = [item[1] for item in scored[:max_places]]
 
-    # if too few, add diversity places from start city
-    if len(selected) < days * 3:
-        for p in places_in_city(start_city):
-            key = p.name_en
-            if key not in seen:
-                seen.add(key)
-                selected.append({
-                    "name_ar": p.name_ar,
-                    "name_de": p.name_de,
-                    "name_en": p.name_en,
-                    "city_en": p.city_en,
-                    "city_ar": p.city_ar,
-                    "lat": p.lat,
-                    "lng": p.lng,
-                    "category": p.category,
-                    "description_ar": p.description_ar,
-                    "description_de": p.description_de,
-                    "description_en": p.description_en,
-                    "duration": p.visit_duration,
-                    "price": p.price_range,
-                    "opening": p.opening_hours,
-                    "best_time": p.best_time,
-                    "nearby": p.nearby_places,
-                })
-
-    # build distance matrix for cities involved
+    # --- 2. Compact distance matrix (only <= 150 km) ---
     cities_involved = list({p["city_ar"] for p in selected})
     distances_text = ""
     for i, c1 in enumerate(cities_involved):
         for c2 in cities_involved[i + 1:]:
             km, hrs = get_distance(c1, c2)
-            if km > 0:
-                distances_text += f"- {c1} ↔ {c2}: {km} km, ca. {hrs} Std. Fahrt\n"
+            if 0 < km <= 150:
+                distances_text += f"- {c1} ↔ {c2}: {km} km ({hrs}h)\n"
 
-    # format places as JSON-safe text
     places_json = json.dumps(selected, ensure_ascii=False, indent=2)
 
     context = f"""
-=== START CITY ===
-{start_city}
+Start city: {start_city}
+Interests: {', '.join(interests)}
+Days: {days}
 
-=== USER INTERESTS ===
-{', '.join(interests)}
+Distances (only <=150 km shown):
+{distances_text or 'All places in one city.'}
 
-=== PLANNED DAYS ===
-{days}
-
-=== DISTANCES BETWEEN CITIES ===
-{distances_text or '(All places in one city)'}
-
-=== AVAILABLE PLACES (with GPS, category, duration, best time) ===
+Places (use ONLY these — max {max_places}):
 {places_json}
 
-=== IMPORTANT RULES ===
-1. Respect realistic drive times between cities. Do NOT schedule 2 cities on the same day if they are >80 km apart.
-2. Cluster nearby places (same city or <5 km) into one day.
-3. Mix categories: history, food, nature, shopping, religious per day when possible.
-4. Respect 'best_time' (morning/evening/sunset) when scheduling.
-5. Use ONLY the places listed above — no fictional locations.
-6. Each activity MUST include lat, lng, and a real location name from the list.
+Rules:
+1. Same-day cities must be <80 km apart.
+2. Cluster nearby places into single days.
+3. Mix categories per day.
+4. Respect 'best_time' when scheduling.
+5. NEVER invent places not in the list above.
 """
     return context
 
