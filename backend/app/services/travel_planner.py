@@ -397,11 +397,15 @@ class DayScheduler:
 
     @staticmethod
     def _pick_unique(city_places: List[Dict], n: int, used_ids: Set[int]) -> List[Dict]:
-        """Pick up to n unused places from a city's list."""
+        """Pick up to n unused places from a city's list.
+        Deduplicates by ID AND by name+city to guard against DB duplicates."""
         result = []
+        seen_names: Set[str] = set()
         for p in city_places:
-            if p["id"] not in used_ids and len(result) < n:
+            name_key = f"{p.get('name_en','') or p.get('name_de','') or p.get('name_ar','')}|{p.get('city_en','')}"
+            if p["id"] not in used_ids and name_key not in seen_names and len(result) < n:
                 result.append(p)
+                seen_names.add(name_key)
         return result
 
 
@@ -409,11 +413,19 @@ class DayScheduler:
 #  3. FOOD / LUNCH SUGGESTIONS
 # ─────────────────────────────────────────────────────────────
 
-def _get_lunch_for_city(db: Session, city: str, lang: str = "en") -> Optional[Dict]:
-    """Return a food place in the given city for lunch, or a hardcoded fallback."""
-    food_places = search_locations(db, city=city, category="food", limit=10)
-    if food_places:
-        place = food_places[0]
+def _get_lunch_for_city(db: Session, city: str, lang: str = "en", exclude_ids: Optional[Set[int]] = None) -> Tuple[Optional[Dict], Optional[int]]:
+    """Return a food place in the given city for lunch, or a hardcoded fallback.
+    Skips any place whose ID is in exclude_ids to avoid duplicating an activity.
+    Returns (lunch_dict, place_id) so the caller can track usage."""
+    exclude_ids = exclude_ids or set()
+    food_places = search_locations(db, city=city, category="food", limit=20)
+    # Pick the first food place that is NOT already used as an activity
+    place = None
+    for fp in food_places:
+        if fp.id not in exclude_ids:
+            place = fp
+            break
+    if place:
         name = place.name_en or place.name_de or place.name_ar
         desc = place.description_en or place.description_ar or ""
         if not desc and lang == "en":
@@ -422,14 +434,17 @@ def _get_lunch_for_city(db: Session, city: str, lang: str = "en") -> Optional[Di
             desc = f"Ein toller Ort, um lokale Küche in {city} zu genießen."
         elif not desc:
             desc = f"مكان رائع لتذوق الطبخ المحلي في {city}."
-        return {
-            "time": "13:00",
-            "title": name,
-            "location": _city_key(place.city_en, place.city_ar),
-            "type": "meal",
-            "description": desc,
-            "price_range": place.price_range or "moderate",
-        }
+        return (
+            {
+                "time": "13:00",
+                "title": name,
+                "location": _city_key(place.city_en, place.city_ar),
+                "type": "meal",
+                "description": desc,
+                "price_range": place.price_range or "moderate",
+            },
+            place.id,
+        )
 
     # Hardcoded fallback lunches for major cities
     FALLBACK_LUNCHES = {
@@ -492,15 +507,18 @@ def _get_lunch_for_city(db: Session, city: str, lang: str = "en") -> Optional[Di
     city_fallbacks = FALLBACK_LUNCHES.get(lang, FALLBACK_LUNCHES["en"])
     if city in city_fallbacks:
         name, desc = city_fallbacks[city]
-        return {
-            "time": "13:00",
-            "title": name,
-            "location": city,
-            "type": "meal",
-            "description": desc,
-            "price_range": "moderate",
-        }
-    return None
+        return (
+            {
+                "time": "13:00",
+                "title": name,
+                "location": city,
+                "type": "meal",
+                "description": desc,
+                "price_range": "moderate",
+            },
+            None,
+        )
+    return None, None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -712,11 +730,16 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
     # Phase 4 — Build final output
     plan = []
     route = []
+    global_used_ids: Set[int] = set()   # track every DB place ID used anywhere in the itinerary
 
     for d in days_skeleton:
         day_num = d["day"]
         city = d["city"]
         acts = []
+
+        # Mark day activities as globally used
+        for place in d["activities"]:
+            global_used_ids.add(place["id"])
 
         time_slots = ["08:30", "11:00", "15:00", "18:00"]
         for i, place in enumerate(d["activities"]):
@@ -738,8 +761,10 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
             })
 
         # Insert lunch between morning and afternoon (or after first activity)
-        lunch = _get_lunch_for_city(db, city, lang)
+        lunch, lunch_id = _get_lunch_for_city(db, city, lang, exclude_ids=global_used_ids)
         if lunch:
+            if lunch_id:
+                global_used_ids.add(lunch_id)
             if len(acts) >= 2:
                 acts.insert(2, lunch)
             elif len(acts) == 1:
