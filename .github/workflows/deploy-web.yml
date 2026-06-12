@@ -33,6 +33,10 @@ jobs:
             git pull origin master
             
             cd syria_offers_app
+            if [ ! -f .env ]; then
+              echo "Creating empty .env (asset required by pubspec.yaml)..."
+              touch .env
+            fi
             flutter pub get
             flutter build web --release
             

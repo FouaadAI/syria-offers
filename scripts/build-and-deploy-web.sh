@@ -19,21 +19,27 @@ git pull origin master
 # 3. Go to Flutter app
 cd syria_offers_app
 
-# 4. Get dependencies
+# 4. Ensure .env exists (required by pubspec.yaml asset, but gitignored)
+if [ ! -f .env ]; then
+    echo "Creating empty .env (asset required by pubspec.yaml)..."
+    touch .env
+fi
+
+# 5. Get dependencies
 echo "Getting Flutter dependencies..."
 flutter pub get
 
-# 5. Build web
+# 6. Build web
 echo "Building Flutter Web..."
 flutter build web --release
 
-# 6. Deploy to nginx web directory
+# 7. Deploy to nginx web directory
 echo "Deploying to backend/web..."
 rm -rf ~/syria-offers/backend/web
 mkdir -p ~/syria-offers/backend/web
 cp -r build/web/* ~/syria-offers/backend/web/
 
-# 7. Restart nginx container
+# 8. Restart nginx container
 echo "Restarting nginx..."
 cd ~/syria-offers/backend
 docker compose -f docker-compose.prod.yml restart nginx
