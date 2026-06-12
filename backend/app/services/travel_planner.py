@@ -736,6 +736,7 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
 
         plan.append({
             "day": day_num,
+            "city": city,
             "title": f"Day {day_num} — {city}" if lang != "ar" else f"اليوم {day_num} — {city}",
             "summary": summary,
             "activities": acts,
