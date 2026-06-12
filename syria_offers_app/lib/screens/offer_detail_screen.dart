@@ -8,6 +8,7 @@ import 'package:syria_offers_app/models/offer.dart';
 import 'package:syria_offers_app/services/api_service.dart';
 import 'package:syria_offers_app/services/favorites_service.dart';
 import 'package:syria_offers_app/screens/booking_confirmation_screen.dart';
+import 'package:syria_offers_app/localization/app_localizations.dart';
 
 class OfferDetailScreen extends StatefulWidget {
   final Offer offer;
@@ -53,10 +54,11 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final currencyFormat = NumberFormat.currency(
-      symbol: 'ل.س',
+      symbol: loc.currencySymbol ?? '',
       decimalDigits: 0,
-      locale: 'ar',
+      locale: Localizations.localeOf(context).toString(),
     );
 
     final offer = widget.offer;
@@ -68,7 +70,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
         title: Text(offer.getDisplayTitle(context)),
         actions: [
           IconButton(
-            tooltip: _isFavorite ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة',
+            tooltip: _isFavorite ? loc.favoritesRemove : loc.favoritesAdd,
             onPressed: () async {
               await _toggleFavorite();
               setState(() {}); // تحديث فوري للأيقونة
@@ -132,7 +134,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    offer.descriptionAr ?? '',
+                    offer.getDisplayDescription(context),
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
@@ -160,7 +162,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   const SizedBox(height: 8),
                   if (offer.endDate != null)
                     Text(
-                      'ينتهي العرض: ${DateFormat.yMMMd('ar').format(DateTime.parse(offer.endDate!))}',
+                      '${loc.endDate}: ${DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(DateTime.parse(offer.endDate!))}',
                       style: const TextStyle(color: Colors.red),
                     ),
                   const SizedBox(height: 12),
@@ -181,7 +183,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                         OutlinedButton.icon(
                           onPressed: () => _launchMaps(context),
                           icon: const Icon(Icons.map, size: 18),
-                          label: const Text('عرض الموقع'),
+                          label: Text(loc.showLocation!),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Theme.of(context).primaryColor),
                             foregroundColor: Theme.of(context).primaryColor,
@@ -204,9 +206,9 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'احجز الآن',
-                        style: TextStyle(fontSize: 18),
+                      child: Text(
+                        loc.bookNow!,
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
                   ),
@@ -243,6 +245,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
   }
 
   void _showBookingSheet(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final offer = widget.offer;
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
@@ -269,9 +272,9 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'معلومات الحجز',
-                    style: TextStyle(
+                  Text(
+                    loc.bookingInfo!,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -280,22 +283,22 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'الاسم الكامل',
+                    decoration: InputDecoration(
+                      labelText: loc.fullName,
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'رقم الهاتف',
+                    decoration: InputDecoration(
+                      labelText: loc.phone,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Text('تاريخ الحجز: '),
+                      Text('${loc.bookingDate}: '),
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: () async {
@@ -304,14 +307,14 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                             initialDate: selectedDate,
                             firstDate: DateTime.now(),
                             lastDate: DateTime.now().add(const Duration(days: 90)),
-                            locale: const Locale('ar'),
+                            locale: Localizations.localeOf(sheetContext),
                           );
                           if (date != null) {
                             setState(() => selectedDate = date);
                           }
                         },
                         child: Text(
-                          DateFormat.yMMMd('ar').format(selectedDate),
+                          DateFormat.yMMMd(Localizations.localeOf(sheetContext).toString()).format(selectedDate),
                         ),
                       ),
                     ],
@@ -319,7 +322,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Text('العدد: '),
+                      Text('${loc.quantity}: '),
                       IconButton(
                         onPressed: () => setState(() => quantity++),
                         icon: const Icon(Icons.add_circle),
@@ -339,7 +342,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       if (nameController.text.isEmpty ||
                           phoneController.text.isEmpty) {
                         ScaffoldMessenger.of(sheetContext).showSnackBar(
-                          const SnackBar(content: Text('يرجى ملء جميع الحقول')),
+                          SnackBar(content: Text(loc.pleaseFillAllFields!)),
                         );
                         return;
                       }
@@ -382,7 +385,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('فشل الاتصال بالخادم: $e')),
+                            SnackBar(content: Text('${loc.error}: $e')),
                           );
                         }
                       }
@@ -394,7 +397,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('تأكيد الحجز'),
+                    child: Text(loc.confirmBooking!),
                   ),
                 ],
               ),

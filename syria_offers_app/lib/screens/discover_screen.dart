@@ -92,7 +92,7 @@ class _PlaceCard extends StatelessWidget {
         fromLat: userLat!, fromLon: userLng!,
         toLat: place.latitude, toLon: place.longitude,
       );
-      distanceText = km < 1 ? '${(km * 1000).round()} م' : km < 100 ? '${km.toStringAsFixed(1)} ${loc.distance}' : '${km.round()} ${loc.distance}';
+      distanceText = km < 1 ? '${(km * 1000).round()} ${loc.distanceMeters}' : km < 100 ? '${km.toStringAsFixed(1)} ${loc.distance}' : '${km.round()} ${loc.distance}';
     }
 
     return Card(

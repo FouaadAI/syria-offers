@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:syria_offers_app/models/offer.dart';
 import 'package:syria_offers_app/screens/offer_detail_screen.dart';
+import 'package:syria_offers_app/localization/app_localizations.dart';
 
 class FlashDealCard extends StatefulWidget {
   final Offer offer;
@@ -40,6 +41,7 @@ class _FlashDealCardState extends State<FlashDealCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final discount = widget.offer.flashDiscountPercent ?? 0;
     final currentPrice = widget.offer.offerPrice;
 
@@ -104,7 +106,7 @@ class _FlashDealCardState extends State<FlashDealCard> {
                     Row(
                       children: [
                         Text(
-                          '${currentPrice.toStringAsFixed(0)} ل.س',
+                          '${currentPrice.toStringAsFixed(0)} ${loc.currencySymbol}',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,

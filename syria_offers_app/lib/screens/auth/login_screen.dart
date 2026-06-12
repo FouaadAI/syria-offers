@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final loc = AppLocalizations.of(context);
     if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.login!)),
+        SnackBar(content: Text(loc.pleaseFillAllFields!)),
       );
       return;
     }
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, '/home');
         }
       } else {
-        final err = jsonDecode(response.body)['detail'] ?? 'فشل تسجيل الدخول';
+        final err = jsonDecode(response.body)['detail'] ?? loc.loginFailed!;
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
         }
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ في الاتصال: $e')),
+          SnackBar(content: Text('${loc.error}: $e')),
         );
       }
     } finally {

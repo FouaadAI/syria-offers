@@ -47,9 +47,24 @@ extension CulturalCategoryExtension on CulturalCategory {
     }
   }
 
+  String get labelDe {
+    switch (this) {
+      case CulturalCategory.unescoSite:
+        return 'UNESCO-Welterbestätten';
+      case CulturalCategory.museum:
+        return 'Museen';
+      case CulturalCategory.historicalMarket:
+        return 'Historische Märkte';
+      case CulturalCategory.religiousSite:
+        return 'Religiöse Stätten';
+    }
+  }
+
   String getLabel(BuildContext context) {
     final lang = Localizations.localeOf(context).languageCode;
-    return lang == 'ar' ? labelAr : labelEn;
+    if (lang == 'ar') return labelAr;
+    if (lang == 'de') return labelDe;
+    return labelEn;
   }
 }
 

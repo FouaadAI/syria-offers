@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:syria_offers_app/models/offer.dart';
 import 'package:syria_offers_app/screens/offer_detail_screen.dart';
+import 'package:syria_offers_app/localization/app_localizations.dart';
 
 class OfferCard extends StatelessWidget {
   final Offer offer;
@@ -13,6 +14,7 @@ class OfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final displayLoc = offer.getDisplayLocation(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -105,7 +107,7 @@ class OfferCard extends StatelessWidget {
                     ),
                   const SizedBox(height: 8),
                   Text(
-                    offer.descriptionAr ?? '',
+                    offer.getDisplayDescription(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -113,7 +115,7 @@ class OfferCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${offer.offerPrice} ل.س',
+                        '${offer.offerPrice} ${loc.currencySymbol}',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -122,7 +124,7 @@ class OfferCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${offer.originalPrice} ل.س',
+                        '${offer.originalPrice} ${loc.currencySymbol}',
                         style: const TextStyle(
                           fontSize: 14,
                           decoration: TextDecoration.lineThrough,

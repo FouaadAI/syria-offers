@@ -57,11 +57,13 @@ class SyriaOffersApp extends StatelessWidget {
       localeResolutionCallback: (locale, supportedLocales) {
         if (locale == null) return const Locale('en');
         if (locale.languageCode == 'ar') return const Locale('ar');
+        if (locale.languageCode == 'de') return const Locale('de');
         if (locale.languageCode == 'en') return const Locale('en');
         return const Locale('en');
       },
       supportedLocales: const [
         Locale('ar'),
+        Locale('de'),
         Locale('en'),
       ],
       localizationsDelegates: const [

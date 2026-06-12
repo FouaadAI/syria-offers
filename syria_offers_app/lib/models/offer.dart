@@ -93,6 +93,12 @@ class Offer {
     return locationNameEn ?? locationNameAr ?? '';
   }
 
+  String getDisplayDescription(BuildContext context) {
+    final code = Localizations.localeOf(context).languageCode;
+    if (code == 'ar') return descriptionAr ?? descriptionEn ?? '';
+    return descriptionEn ?? descriptionAr ?? '';
+  }
+
   // returns distance in kilometers; returns double.infinity if coords are missing
   double distanceTo(double userLat, double userLng) {
     if (latitude == null || longitude == null) return double.infinity;

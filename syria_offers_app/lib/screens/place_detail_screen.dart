@@ -53,11 +53,11 @@ class PlaceDetailScreen extends StatelessWidget {
                       style: TextStyle(fontSize: 15, height: 1.7, color: Colors.grey[800]),),
                   const SizedBox(height: 24),
                   if (place.openingHours != null)
-                    _infoCard(context, Icons.access_time, 'أوقات العمل', place.openingHours!),
+                    _infoCard(context, Icons.access_time, loc.visitingHours!, place.openingHours!),
                   if (place.phone != null)
-                    _infoCard(context, Icons.phone, 'رقم الهاتف', place.phone!),
+                    _infoCard(context, Icons.phone, loc.phone!, place.phone!),
                   if (place.website != null)
-                    _infoCard(context, Icons.language, 'الموقع الإلكتروني', place.website!),
+                    _infoCard(context, Icons.language, loc.website!, place.website!),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,

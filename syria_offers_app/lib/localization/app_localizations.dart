@@ -167,6 +167,31 @@ class AppLocalizations {
   String? get paymentSuccessTitle => _strings['paymentSuccessTitle'];
   String? get backToHome => _strings['backToHome'];
 
+  // ═════════ MISSING LOCALIZATION KEYS ═════════
+  String? get currencySymbol => _strings['currencySymbol'];
+  String? get bookingDate => _strings['bookingDate'];
+  String? get quantity => _strings['quantity'];
+  String? get totalAmount => _strings['totalAmount'];
+  String? get bookingCode => _strings['bookingCode'];
+  String? get bookingConfirmed => _strings['bookingConfirmed'];
+  String? get thankYouBookingConfirmed => _strings['thankYouBookingConfirmed'];
+  String? get showLocation => _strings['showLocation'];
+  String? get bookingInfo => _strings['bookingInfo'];
+  String? get confirmBooking => _strings['confirmBooking'];
+  String? get name => _strings['name'];
+  String? get website => _strings['website'];
+  String? get favoritesAdd => _strings['favoritesAdd'];
+  String? get favoritesRemove => _strings['favoritesRemove'];
+  String? get shareOfferTitle => _strings['shareOfferTitle'];
+  String? get shareOfferBody => _strings['shareOfferBody'];
+  String? get notAvailable => _strings['notAvailable'];
+  String? get directions => _strings['directions'];
+  String? get distanceMeters => _strings['distanceMeters'];
+  String? get payNow => _strings['payNow'];
+  String? get phoneRequired => _strings['phoneRequired'];
+  String? get phoneTooShort => _strings['phoneTooShort'];
+  String? get verificationFailed => _strings['verificationFailed'];
+
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
@@ -177,7 +202,7 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
 
   @override
   bool isSupported(Locale locale) {
-    return ['ar', 'en'].contains(locale.languageCode);
+    return ['ar', 'de', 'en'].contains(locale.languageCode);
   }
 
   @override
@@ -350,6 +375,30 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
         'status': 'الحالة',
         'paymentSuccessTitle': 'تم الدفع',
         'backToHome': 'العودة للرئيسية',
+        // Missing keys added for hardcoded strings
+        'currencySymbol': 'ل.س',
+        'bookingDate': 'تاريخ الحجز',
+        'quantity': 'العدد',
+        'totalAmount': 'المبلغ الإجمالي',
+        'bookingCode': 'رمز الحجز',
+        'bookingConfirmed': 'تم الحجز بنجاح',
+        'thankYouBookingConfirmed': 'شكراً لك! تم تأكيد حجزك',
+        'showLocation': 'عرض الموقع',
+        'bookingInfo': 'معلومات الحجز',
+        'confirmBooking': 'تأكيد الحجز',
+        'name': 'الاسم',
+        'website': 'الموقع الإلكتروني',
+        'favoritesAdd': 'إضافة إلى المفضلة',
+        'favoritesRemove': 'إزالة من المفضلة',
+        'shareOfferTitle': 'شوف هذا العرض الرائع على تطبيق Offria!',
+        'shareOfferBody': 'حمل تطبيق Offria الآن واستكشف أفضل العروض! 🎁',
+        'notAvailable': 'غير متوفر',
+        'directions': 'الاتجاهات',
+        'distanceMeters': 'م',
+        'payNow': 'ادفع الآن',
+        'phoneRequired': 'رقم الهاتف مطلوب',
+        'phoneTooShort': 'يجب أن يحتوي رقم الهاتف على 10 أرقام على الأقل',
+        'verificationFailed': 'فشل التحقق من الرمز',
       };
     }
     // Default Englisch (und Deutsch fällt auch hier rein)
@@ -514,6 +563,30 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
       'status': 'Status',
       'paymentSuccessTitle': 'Payment Successful',
       'backToHome': 'Back to Home',
+      // Missing keys added for hardcoded strings
+      'currencySymbol': 'SP',
+      'bookingDate': 'Booking Date',
+      'quantity': 'Quantity',
+      'totalAmount': 'Total Amount',
+      'bookingCode': 'Booking Code',
+      'bookingConfirmed': 'Booking Confirmed',
+      'thankYouBookingConfirmed': 'Thank you! Your booking has been confirmed.',
+      'showLocation': 'Show Location',
+      'bookingInfo': 'Booking Info',
+      'confirmBooking': 'Confirm Booking',
+      'name': 'Name',
+      'website': 'Website',
+      'favoritesAdd': 'Add to Favorites',
+      'favoritesRemove': 'Remove from Favorites',
+      'shareOfferTitle': 'Check out this amazing offer on Offria!',
+      'shareOfferBody': 'Download the Offria app now and discover the best offers! 🎁',
+      'notAvailable': 'Not available',
+      'directions': 'Directions',
+      'distanceMeters': 'm',
+      'payNow': 'Pay Now',
+      'phoneRequired': 'Phone number is required',
+      'phoneTooShort': 'Phone number must be at least 10 digits',
+      'verificationFailed': 'Verification failed',
     };
   }
 }

@@ -472,6 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecommendationCard(Offer offer) {
+    final loc = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -530,7 +531,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  '${offer.offerPrice} ل.س',
+                  '${offer.offerPrice} ${loc.currencySymbol}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.bold,

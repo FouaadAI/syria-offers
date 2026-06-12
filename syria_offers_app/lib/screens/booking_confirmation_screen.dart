@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syria_offers_app/screens/payment/payment_screen.dart';
+import 'package:syria_offers_app/localization/app_localizations.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
   final String bookingCode;
@@ -24,15 +25,16 @@ class BookingConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final currencyFormat = NumberFormat.currency(
-      symbol: 'ل.س',
+      symbol: loc.currencySymbol ?? '',
       decimalDigits: 0,
-      locale: 'ar',
+      locale: Localizations.localeOf(context).toString(),
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تم الحجز بنجاح'),
+        title: Text(loc.bookingConfirmed!),
       ),
       body: Center(
         child: Padding(
@@ -42,9 +44,9 @@ class BookingConfirmationScreen extends StatelessWidget {
             children: [
               Icon(Icons.check_circle, size: 100, color: Theme.of(context).colorScheme.secondary),
               const SizedBox(height: 24),
-              const Text(
-                'شكراً لك! تم تأكيد حجزك',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Text(
+                loc.thankYouBookingConfirmed!,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -53,12 +55,12 @@ class BookingConfirmationScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _infoRow('الاسم', userName),
-                      _infoRow('رقم الهاتف', userPhone),
-                      _infoRow('تاريخ الحجز',
-                          DateFormat.yMMMd('ar').format(bookedAt),),
-                      _infoRow('العدد', quantity.toString()),
-                      _infoRow('المبلغ الإجمالي',
+                      _infoRow(loc.name!, userName),
+                      _infoRow(loc.phone!, userPhone),
+                      _infoRow(loc.bookingDate!,
+                          DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(bookedAt),),
+                      _infoRow(loc.quantity!, quantity.toString()),
+                      _infoRow(loc.totalAmount!,
                           currencyFormat.format(totalPrice),),
                       const SizedBox(height: 8),
                       Container(
@@ -68,7 +70,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'رمز الحجز: $bookingCode',
+                          '${loc.bookingCode}: $bookingCode',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -87,7 +89,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                   Navigator.pushNamedAndRemoveUntil(
                       context, '/home', (route) => false,);
                 },
-                child: const Text('العودة للرئيسية'),
+                child: Text(loc.backToHome!),
               ),
               const SizedBox(height: 12),
               // زر الدفع (يستخدم bookingId الحقيقي)
@@ -103,7 +105,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text('ادفع الآن'),
+                child: Text(loc.payNow!),
               ),
             ],
           ),
