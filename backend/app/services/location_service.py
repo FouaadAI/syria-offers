@@ -66,7 +66,8 @@ def get_locations_in_city(db: Session, city: str, limit: int = 200) -> List[Loca
     """All places inside a city (matches city_en or city_ar, case-insensitive)."""
     city_clean = city.strip().lower()
     return db.query(Location).filter(
-        func.lower(Location.city_en) == city_clean
+        (func.lower(Location.city_en) == city_clean) |
+        (func.lower(Location.city_ar) == city_clean)
     ).limit(limit).all()
 
 

@@ -37,10 +37,11 @@ genai_client = get_genai_client()
 def build_context(db: Session, preferences: dict, start_city: str = "Damascus", days: int = 5) -> str:
     """
     Query the locations DB and build a compact, high-quality prompt context.
-    Limits to ~20 places so Gemini answers quickly (<10 s) even via proxy.
+    Enforces city diversity so multi-day trips do not stagnate in one city.
     """
     interests = [i.strip().lower() for i in preferences.get("interests", "history,food").split(",")]
-    max_places = 20
+    max_places = 25
+    start_city_lower = start_city.lower()
 
     scored: List[Tuple[int, Dict]] = []
     seen = set()
@@ -51,7 +52,11 @@ def build_context(db: Session, preferences: dict, start_city: str = "Damascus", 
             return
         seen.add(key)
 
-        # Truncate description to first sentence for compactness
+        # Penalise plain neighbourhood entries — they are districts, not attractions
+        cat = (place.category or "").lower()
+        if cat == "neighbourhood":
+            score -= 40
+
         desc = place.description_ar or place.description_en or ""
         if desc:
             short = desc.split(".")[0] + "." if "." in desc else desc[:120]
@@ -72,32 +77,56 @@ def build_context(db: Session, preferences: dict, start_city: str = "Damascus", 
             "best_time": place.best_time,
         }))
 
-    # 1) Start-city places get highest score
-    for place in get_locations_in_city(db, start_city):
-        _add(place, score=100)
-
-    # 2) Interest-matching places
+    # 1) Interest-matching places FIRST (higher priority than raw city dump)
     for interest in interests:
         for place in get_locations_by_interest(db, interest):
-            if place.city_en and place.city_en.lower() == start_city.lower():
-                _add(place, score=90)
+            place_city = (place.city_en or "").lower() or (place.city_ar or "").lower()
+            if place_city == start_city_lower:
+                _add(place, score=95)
             else:
                 km, _ = get_distance(start_city, place.city_ar or place.city_en or "")
                 if km <= 0:
                     km = 999
                 if km < 80:
-                    _add(place, score=70)
+                    _add(place, score=80)
                 elif km < 150:
-                    _add(place, score=50)
+                    _add(place, score=65)
+                elif km < 250:
+                    _add(place, score=45)
                 else:
-                    _add(place, score=30)
+                    _add(place, score=25)
 
-    # Sort by score descending, keep top N
+    # 2) Start-city places — cap at 5 so they do not dominate the list
+    start_city_count = 0
+    for place in get_locations_in_city(db, start_city):
+        if start_city_count >= 5:
+            break
+        _add(place, score=60)
+        start_city_count += 1
+
+    # Sort by score descending
     scored.sort(key=lambda x: x[0], reverse=True)
     selected = [item[1] for item in scored[:max_places]]
 
     if not selected:
         return ""
+
+    # Enforce city diversity for trips > 2 days:
+    # at least 40 % of places must come from cities other than start_city.
+    if days > 2:
+        other_city_places = [p for p in selected if (p["city_en"] or "").lower() != start_city_lower and (p["city_ar"] or "").lower() != start_city_lower]
+        if len(other_city_places) < max_places * 0.4:
+            # Force-add top-scored places from other major cities
+            from app.services.location_service import get_all_cities
+            all_cities = get_all_cities(db)
+            for city_ar, city_de, city_en in all_cities:
+                if (city_en or "").lower() == start_city_lower or (city_ar or "").lower() == start_city_lower:
+                    continue
+                city_places = get_locations_in_city(db, city_en or city_ar)
+                for cp in city_places[:3]:
+                    _add(cp, score=70)
+            scored.sort(key=lambda x: x[0], reverse=True)
+            selected = [item[1] for item in scored[:max_places]]
 
     # Compact distance matrix (only <=150 km)
     cities_involved = list({p["city_ar"] for p in selected})
@@ -121,12 +150,13 @@ AUTHORISED PLACES (use ONLY these — do not invent):
 {places_json}
 
 ROUTING RULES:
-1. Same-day cities must be <80 km apart (see distance table).
-2. Cluster nearby places into single logical days.
-3. Mix categories per day for a balanced experience.
-4. Respect 'best_time' when scheduling (morning = museums/history, afternoon = nature/shopping, evening = dining/views).
-5. NEVER invent places, prices, or coordinates not listed above.
-6. If a place lacks coordinates, skip it — do not guess.
+1. For trips > 2 days, spread across AT LEAST 3 different cities. Do NOT stay in {start_city} for more than 2 consecutive days.
+2. Same-day cities must be <80 km apart (see distance table).
+3. Avoid 'neighbourhood' entries — these are residential districts, not tourist attractions.
+4. Mix categories per day for a balanced experience (history, nature, food, religious).
+5. Respect 'best_time' when scheduling (morning = museums/history, afternoon = nature/shopping, evening = dining/views).
+6. NEVER invent places, prices, or coordinates not listed above.
+7. If a place lacks coordinates, skip it — do not guess.
 """
     return context
 
@@ -182,7 +212,7 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
 
     prompt = f"""{system_instruction}
 
-You must plan a {days}-day trip starting in {start_city}.
+You must plan a professional {days}-day trip starting in {start_city}.
 User preferences: {json.dumps(preferences, ensure_ascii=False)}
 
 ---
@@ -213,7 +243,9 @@ OUTPUT FORMAT — respond ONLY with a valid JSON object matching this exact sche
   ]
 }}
 
-SCHEDULING GUIDELINES:
+SCHEDULING & DIVERSITY RULES:
+• For trips > 2 days, visit AT LEAST 3 different cities. Do NOT stay in {start_city} more than 2 days in a row.
+• Do NOT use 'neighbourhood' entries as attractions — skip them.
 • 08:00–12:00 → historical sites, museums, religious landmarks.
 • 12:00–14:00 → lunch / food markets / local cuisine.
 • 14:00–18:00 → nature, shopping districts, light walking.

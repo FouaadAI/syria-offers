@@ -138,6 +138,12 @@ TONE:
 • For locations: describe what the visitor will experience in 1–2 sentences.
 • When listing places, mention city, category, and a highlight.
 
+CRITICAL RULE — NO HALLUCINATION:
+• You may ONLY mention places, museums, restaurants, hotels, or landmarks that were returned by the search_locations or search_offers database functions.
+• NEVER use your own general knowledge about Syria, Damascus, Aleppo, or any other city.
+• If the database returns zero results, be honest: say "I could not find matching places in our database right now" in the user's language.
+• Do NOT invent museum names, historical sites, or attractions.
+
 WHEN TO CALL FUNCTIONS:
 • User asks about prices, discounts, deals → call search_offers.
 • User asks about sightseeing, places to visit, neighbourhoods, landmarks → call search_locations.
@@ -192,12 +198,21 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
             args = fc.args
             offers = search_offers_in_db(db, category=args.get("category"), max_price=args.get("max_price"), keywords=args.get("keywords"))
             offers_resp = [OfferResponse.model_validate(o) for o in offers]
-            if lang == "ar":
-                reply = f"✅ وجدت لك {len(offers_resp)} عروض!" if offers_resp else "❌ لم أجد عروضاً مطابقة."
-            elif lang == "de":
-                reply = f"✅ Ich habe {len(offers_resp)} Angebote gefunden!" if offers_resp else "❌ Keine passenden Angebote gefunden."
+
+            if not offers_resp:
+                if lang == "ar":
+                    reply = "❌ لا توجد عروض نشطة في قاعدة البيانات حالياً. يمكنني مساعدتك في التخطيط لرحلة بدلاً من ذلك!"
+                elif lang == "de":
+                    reply = "❌ Derzeit gibt es keine aktiven Angebote in unserer Datenbank. Ich kann dir stattdessen bei der Reiseplanung helfen!"
+                else:
+                    reply = "❌ There are no active offers in our database right now. I can help you plan a trip instead!"
             else:
-                reply = f"✅ Found {len(offers_resp)} offers!" if offers_resp else "❌ No matching offers found."
+                if lang == "ar":
+                    reply = f"✅ وجدت لك {len(offers_resp)} عروض!"
+                elif lang == "de":
+                    reply = f"✅ Ich habe {len(offers_resp)} Angebote gefunden!"
+                else:
+                    reply = f"✅ Found {len(offers_resp)} offers!"
 
             history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
             sessions[sid] = history
@@ -209,27 +224,36 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
             locs = search_locations_in_db(db, city=args.get("city"), category=args.get("category"), keywords=args.get("keywords"))
             locs_resp = [LocationOut.model_validate(l) for l in locs]
 
-            if lang == "ar":
-                reply = f"✅ وجدت {len(locs_resp)} أماكن!" if locs_resp else "❌ لم أجد أماكن مطابقة."
-            elif lang == "de":
-                reply = f"✅ Ich habe {len(locs_resp)} Orte gefunden!" if locs_resp else "❌ Keine passenden Orte gefunden."
-            else:
-                reply = f"✅ Found {len(locs_resp)} places!" if locs_resp else "❌ No matching places found."
+            if not locs_resp:
+                if lang == "ar":
+                    reply = "❌ لم أجد أماكن مطابقة في قاعدة بياناتنا حالياً. جرّب كلمات بحث مختلفة أو مدينة أخرى."
+                elif lang == "de":
+                    reply = "❌ Ich habe leider keine passenden Orte in unserer Datenbank gefunden. Versuche andere Suchbegriffe oder eine andere Stadt."
+                else:
+                    reply = "❌ I could not find matching places in our database right now. Try different keywords or another city."
+                history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
+                sessions[sid] = history
+                return ChatResponse(reply=reply, locations=[], session_id=sid)
 
-            # Build richer reply by asking Gemini to describe the found places
-            if locs_resp:
-                place_names = ", ".join([l.name_ar or l.name_en or "" for l in locs_resp[:5]])
-                desc_prompt = f"The user searched for places. Briefly describe these locations in {'Arabic' if lang=='ar' else 'German' if lang=='de' else 'English'}: {place_names}. Keep it under 3 sentences."
-                try:
-                    desc_resp = genai_client.models.generate_content(
-                        model="gemini-2.5-flash-lite",
-                        contents=desc_prompt,
-                        config=types.GenerateContentConfig(temperature=0.3),
-                    )
-                    if desc_resp.candidates:
-                        reply = desc_resp.candidates[0].content.parts[0].text.strip()
-                except Exception:
-                    pass
+            # Build reply strictly from DB results — no external knowledge
+            if lang == "ar":
+                lines = [f"✅ وجدت {len(locs_resp)} أماكن في قاعدة البيانات:\n"]
+            elif lang == "de":
+                lines = [f"✅ Ich habe {len(locs_resp)} Orte in unserer Datenbank gefunden:\n"]
+            else:
+                lines = [f"✅ Found {len(locs_resp)} places in our database:\n"]
+
+            for l in locs_resp[:8]:
+                name = l.name_ar or l.name_en or ""
+                city = l.city_ar or l.city_en or ""
+                cat = l.category or ""
+                desc = l.description_ar or l.description_en or ""
+                lines.append(f"• {name} — {city} ({cat})")
+                if desc:
+                    short = desc.split(".")[0] + "." if "." in desc else desc[:120]
+                    lines.append(f"  {short}")
+
+            reply = "\n".join(lines)
 
             history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
             sessions[sid] = history
