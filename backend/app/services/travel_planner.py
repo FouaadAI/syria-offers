@@ -40,7 +40,7 @@ def build_context(db: Session, preferences: dict, start_city: str = "Damascus", 
     Enforces city diversity so multi-day trips do not stagnate in one city.
     """
     interests = [i.strip().lower() for i in preferences.get("interests", "history,food").split(",")]
-    max_places = 25
+    max_places = 15          # smaller = faster Gemini response
     start_city_lower = start_city.lower()
 
     scored: List[Tuple[int, Dict]] = []
@@ -96,10 +96,10 @@ def build_context(db: Session, preferences: dict, start_city: str = "Damascus", 
                 else:
                     _add(place, score=25)
 
-    # 2) Start-city places — cap at 5 so they do not dominate the list
+    # 2) Start-city places — cap at 3 so they do not dominate the list
     start_city_count = 0
     for place in get_locations_in_city(db, start_city):
-        if start_city_count >= 5:
+        if start_city_count >= 3:
             break
         _add(place, score=60)
         start_city_count += 1
@@ -212,52 +212,24 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
 
     prompt = f"""{system_instruction}
 
-You must plan a professional {days}-day trip starting in {start_city}.
-User preferences: {json.dumps(preferences, ensure_ascii=False)}
-
----
+Plan a {days}-day trip. Preferences: {json.dumps(preferences, ensure_ascii=False)}. Trip MUST begin AND end in {start_city}.
 
 {context}
 
----
+OUTPUT — valid JSON only:
+{{"plan":[{{"day":1,"activities":[{{"time":"08:00","title":"name","location":"city","lat":0.0,"lng":0.0,"description":"text"}}]}}],"route":[{{"day":1,"city":"Damascus","drive_from_previous":null,"overnight":true}}]}}
 
-OUTPUT FORMAT — respond ONLY with a valid JSON object matching this exact schema:
-{{
-  "plan": [
-    {{
-      "day": 1,
-      "activities": [
-        {{
-          "time": "08:00",
-          "title": "exact place name from database",
-          "location": "city name",
-          "lat": 33.5138,
-          "lng": 36.2765,
-          "description": "1–2 factual sentences about the place"
-        }}
-      ]
-    }}
-  ],
-  "route": [
-    {{"day": 1, "city": "Damascus", "drive_from_previous": null, "overnight": true}}
-  ]
-}}
-
-SCHEDULING & DIVERSITY RULES:
-• For trips > 2 days, visit AT LEAST 3 different cities. Do NOT stay in {start_city} more than 2 days in a row.
-• Do NOT use 'neighbourhood' entries as attractions — skip them.
-• 08:00–12:00 → historical sites, museums, religious landmarks.
-• 12:00–14:00 → lunch / food markets / local cuisine.
-• 14:00–18:00 → nature, shopping districts, light walking.
-• 18:00–21:00 → sunset viewpoints, dinner, cafés.
-• Max 2 cities per day and ONLY if they are ≤50 km apart.
-• Do NOT invent places, prices, or GPS coordinates.
-• Every activity must use a place from the AUTHORISED PLACES list above.
+RULES:
+1. Begin in {start_city} day 1, end in {start_city} day {days}.
+2. Visit ≥3 different cities across the trip. Max 2 cities/day, only if ≤50 km apart.
+3. Skip 'neighbourhood' entries — not tourist attractions.
+4. Schedule: 08:00-12:00 history/museums, 12:00-14:00 food, 14:00-18:00 nature, 18:00-21:00 views/dining.
+5. NEVER invent places/coordinates. Only use AUTHORISED PLACES above.
 """
 
     config = types.GenerateContentConfig(
         system_instruction=prompt,
-        temperature=0.15,
+        temperature=0.1,
         response_mime_type="application/json",
     )
 
@@ -279,16 +251,19 @@ SCHEDULING & DIVERSITY RULES:
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
+        # Log raw text for debugging
+        print(f"[PLANNER JSON ERROR] Raw response:\n{raw[:2000]}")
+        # Graceful fallback with generic but correct structure
         data = {
             "plan": [{
                 "day": 1,
                 "activities": [{
                     "time": "09:00",
-                    "title": "Umayyad Mosque" if lang != "ar" else "الجامع الأموي",
+                    "title": "الجامع الأموي" if lang == "ar" else "Umayyad Mosque",
                     "location": start_city,
                     "lat": 33.5116,
                     "lng": 36.3064,
-                    "description": "Explore the old city" if lang != "ar" else "استكشف المدينة القديمة",
+                    "description": "استكشف المدينة القديمة" if lang == "ar" else "Explore the Old City",
                 }]
             }],
             "route": [{"day": 1, "city": start_city, "drive_from_previous": None, "overnight": True}],
