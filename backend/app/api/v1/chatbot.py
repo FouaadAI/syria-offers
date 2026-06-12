@@ -241,10 +241,19 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
                 lines = [f"✅ Found {len(locs_resp)} places in our database:\n"]
 
             for l in locs_resp[:8]:
-                name = l.name_ar or l.name_en or ""
-                city = l.city_ar or l.city_en or ""
+                if lang == "ar":
+                    name = l.name_ar or l.name_en or ""
+                    city = l.city_ar or l.city_en or ""
+                    desc = l.description_ar or l.description_en or ""
+                elif lang == "de":
+                    name = l.name_de or l.name_en or l.name_ar or ""
+                    city = l.city_de or l.city_en or l.city_ar or ""
+                    desc = l.description_en or l.description_ar or ""
+                else:
+                    name = l.name_en or l.name_de or l.name_ar or ""
+                    city = l.city_en or l.city_de or l.city_ar or ""
+                    desc = l.description_en or l.description_ar or ""
                 cat = l.category or ""
-                desc = l.description_ar or l.description_en or ""
                 lines.append(f"• {name} — {city} ({cat})")
                 if desc:
                     short = desc.split(".")[0] + "." if "." in desc else desc[:120]

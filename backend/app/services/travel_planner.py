@@ -44,7 +44,7 @@ genai_client = get_genai_client()
 # ─────────────────────────────────────────────────────────────
 
 MAX_START_CITY_PLACES = 3          # max unique places from start city across whole trip
-ACTIVITIES_PER_DAY = 4             # morning, midday, afternoon, evening
+ACTIVITIES_PER_DAY = 3             # morning, midday, afternoon (lunch inserted separately)
 MIN_CITIES_MULTI_DAY = 3           # for trips > 2 days
 MEAL_SLOT = {"time": "13:00", "type": "lunch"}
 
@@ -280,15 +280,42 @@ class DayScheduler:
 
         city_idx = 0
         while current_day <= self.days - (1 if last_day_return else 0) and current_day <= self.days:
-            target_city = remaining_cities[city_idx % len(remaining_cities)] if remaining_cities else prev_city
-            city_idx += 1
+            # Pick the next city that has enough unique places left
+            target_city = None
+            attempts = 0
+            while city_idx < len(remaining_cities) and attempts < len(remaining_cities):
+                candidate = remaining_cities[city_idx % len(remaining_cities)]
+                available = [p for p in by_city.get(candidate, []) if p["id"] not in used_place_ids]
+                if len(available) >= 2:
+                    target_city = candidate
+                    remaining_cities.pop(city_idx % len(remaining_cities))
+                    break
+                city_idx += 1
+                attempts += 1
+
+            # No city with >=2 places: pick the one with the most remaining
+            if not target_city and remaining_cities:
+                best_city = None
+                best_count = 0
+                for c in remaining_cities:
+                    cnt = len([p for p in by_city.get(c, []) if p["id"] not in used_place_ids])
+                    if cnt > best_count:
+                        best_count = cnt
+                        best_city = c
+                if best_city:
+                    target_city = best_city
+                    remaining_cities.remove(best_city)
+
+            # Fallback: reuse previous city
+            if not target_city:
+                target_city = prev_city
 
             km, hrs = get_distance(_city_ar(prev_city), _city_ar(target_city))
             day_places = self._pick_unique(by_city.get(target_city, []), ACTIVITIES_PER_DAY, used_place_ids)
 
-            # Borrow from nearby city if target has too few
-            if len(day_places) < 2 and remaining_cities:
-                for nearby_city in remaining_cities:
+            # If still too few, borrow from nearby cities (only as last resort)
+            if len(day_places) < 2:
+                for nearby_city in list(remaining_cities):
                     if nearby_city == target_city:
                         continue
                     nkm, _ = get_distance(_city_ar(target_city), _city_ar(nearby_city))
@@ -298,6 +325,7 @@ class DayScheduler:
                         if len(day_places) >= 2:
                             break
 
+            # Absolute fallback: any remaining place anywhere
             if not day_places:
                 for c, plist in by_city.items():
                     day_places = self._pick_unique(plist, ACTIVITIES_PER_DAY, used_place_ids)
