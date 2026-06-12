@@ -41,22 +41,9 @@ extension PlaceCategoryExtension on PlaceCategory {
     }
   }
 
-  String get labelDe {
-    switch (this) {
-      case PlaceCategory.hotel:     return 'Hotels';
-      case PlaceCategory.restaurant: return 'Restaurants';
-      case PlaceCategory.park:       return 'Parks';
-      case PlaceCategory.activity:   return 'Aktivitäten';
-      case PlaceCategory.event:      return 'Veranstaltungen';
-      case PlaceCategory.cinema:     return 'Kino';
-    }
-  }
-
   String getLabel(BuildContext context) {
     final lang = Localizations.localeOf(context).languageCode;
-    if (lang == 'ar') return labelAr;
-    if (lang == 'de') return labelDe;
-    return labelEn;
+    return lang == 'ar' ? labelAr : labelEn;
   }
 }
 
