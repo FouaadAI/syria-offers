@@ -270,16 +270,42 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
 
             lines = []
             if lang == "ar":
-                lines.append("🗺️ **خطة رحلتك إلى سوريا** 🌟\n")
+                lines.append("🗺️ **خطة رحلتك إلى سوريا** 🌟")
             elif lang == "de":
-                lines.append("🗺️ **Ihr Syrien-Reiseplan** 🌟\n")
+                lines.append("🗺️ **Ihr Syrien-Reiseplan** 🌟")
             else:
-                lines.append("🗺️ **Your Syria Travel Itinerary** 🌟\n")
+                lines.append("🗺️ **Your Syria Travel Itinerary** 🌟")
+
+            # Top-level trip summary
+            summary = plan.get("summary", "")
+            if summary:
+                lines.append(f"\n📝 {summary}\n")
 
             for day in plan["plan"]:
-                lines.append(f"\n📅 **{'اليوم' if lang=='ar' else 'Tag' if lang=='de' else 'Day'} {day['day']}**")
+                day_label = "اليوم" if lang == "ar" else "Tag" if lang == "de" else "Day"
+                lines.append(f"\n📅 **{day_label} {day['day']} — {day['city']}**")
+
+                # Travel notes
+                travel = day.get("travel_notes")
+                if travel:
+                    lines.append(f"🚗 {travel}")
+
+                # Activities
                 for a in day["activities"]:
-                    lines.append(f"  ⏰ {a['time']} – {a['title']} ({a['location']})")
+                    # Detect lunch / meal
+                    is_meal = a.get("type") == "meal" or a.get("title") in ["Lunch", "Mittagessen", "الغداء"]
+                    if is_meal or a.get("time") == "13:00":
+                        lines.append(f"  🍽️ {a['time']} – {a['title']} ({a['location']})")
+                    else:
+                        lines.append(f"  ⏰ {a['time']} – {a['title']} ({a['location']})")
+                    desc = a.get("description", "")
+                    if desc:
+                        lines.append(f"     {desc}")
+
+                # Daily tip
+                tip = day.get("daily_tip")
+                if tip:
+                    lines.append(f"💡 {tip}")
 
             lines.append("")
             if lang == "ar":
