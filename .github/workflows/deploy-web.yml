@@ -1,0 +1,47 @@
+name: Deploy Flutter Web
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'syria_offers_app/**'
+      - 'backend/nginx.conf'
+      - 'backend/docker-compose.prod.yml'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            echo "=== GitHub Actions Deploy ==="
+            export PATH="$PATH:$HOME/flutter/bin"
+            
+            cd ~/syria-offers
+            git pull origin master
+            
+            cd syria_offers_app
+            flutter pub get
+            flutter build web --release
+            
+            rm -rf ~/syria-offers/backend/web
+            mkdir -p ~/syria-offers/backend/web
+            cp -r build/web/* ~/syria-offers/backend/web/
+            
+            cd ~/syria-offers/backend
+            docker compose -f docker-compose.prod.yml restart nginx
+            
+            echo "=== Deploy complete ==="
+            docker compose -f docker-compose.prod.yml ps nginx
