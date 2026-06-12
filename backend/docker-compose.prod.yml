@@ -19,6 +19,24 @@ services:
       timeout: 5s
       retries: 5
 
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: syria_offers_backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: syriaoffers
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: syriaoffers
+    volumes:
+      - backupdata:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
   redis:
     image: redis:7-alpine
     container_name: syria_offers_redis
@@ -73,6 +91,7 @@ services:
 
 volumes:
   pgdata:
+  backupdata:
 
 networks:
   app-network:
