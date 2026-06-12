@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.gemini_client import get_genai_client
 from app.models.offer import Offer, Category
 from app.models.location import Location
+from app.models.chat_message import ChatMessage
 from app.schemas.offer import OfferResponse
 from app.schemas.location import LocationOut
 from pydantic import BaseModel
@@ -73,7 +74,35 @@ plan_trip_function = {
     }
 }
 
-sessions: Dict[str, list] = {}
+# ---------------------------------------------------------------------------
+#  Chat history DB helpers
+# ---------------------------------------------------------------------------
+
+def load_history(db: Session, session_id: str, limit: int = 20):
+    """Load the last N messages for a session from the database."""
+    rows = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == session_id)
+        .order_by(ChatMessage.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+    return [{"role": r.role, "text": r.content, "function_call": r.function_call} for r in rows]
+
+
+def save_message(db: Session, session_id: str, role: str, content: str,
+                 user_id: int = None, function_call: dict = None, language: str = None):
+    """Persist a single chat turn to the database."""
+    msg = ChatMessage(
+        session_id=session_id,
+        user_id=user_id,
+        role=role,
+        content=content,
+        function_call=function_call,
+        language=language,
+    )
+    db.add(msg)
+    db.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +164,12 @@ YOUR ROLE:
 • You give practical advice: best routes, realistic driving times, ideal visit durations, local cuisine.
 • You adapt recommendations to the user's interests, time, budget, and travel style.
 
+CRITICAL RULE — CONTEXT AWARENESS:
+• You have access to the full conversation history. USE IT.
+• When the user asks a short follow-up like "and in Latakia?", "what about Aleppo?", or "any restaurants?", infer the missing intent from the PREVIOUS messages.
+  Example: If the user previously asked "list all restaurants in Damascus" and then says "and in Latakia?", you MUST call search_locations with city="Latakia" and category="food".
+• NEVER ask the user to repeat information they already gave in a previous turn.
+
 CRITICAL RULE — NO HALLUCINATION:
 • You may ONLY mention places, museums, restaurants, hotels, or landmarks that were returned by the search_locations or search_offers database functions.
 • NEVER use your own general knowledge about Syria, Damascus, Aleppo, or any other city.
@@ -143,7 +178,7 @@ CRITICAL RULE — NO HALLUCINATION:
 
 WHEN TO CALL FUNCTIONS:
 • User asks about prices, discounts, deals → call search_offers.
-• User asks about sightseeing, places to visit, neighbourhoods, landmarks → call search_locations.
+• User asks about sightseeing, places to visit, neighbourhoods, landmarks, or restaurants → call search_locations.
 • User asks for a full itinerary or travel plan → call plan_trip.
 """
 
@@ -153,9 +188,9 @@ WHEN TO CALL FUNCTIONS:
 # ---------------------------------------------------------------------------
 
 @router.get("/", response_model=ChatResponse)
-async def chat(query: str, session_id: str = Query(""), db: Session = Depends(get_db)):
+async def chat(query: str, session_id: str = Query(""), user_id: int = Query(None), db: Session = Depends(get_db)):
     sid = session_id.strip() or str(uuid.uuid4())
-    history = sessions.get(sid, [])
+    history = load_history(db, sid, limit=20)
 
     # Detect language
     has_arabic = any('\u0600' <= c <= '\u06ff' for c in query)
@@ -211,8 +246,9 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
                 else:
                     reply = f"✅ Found {len(offers_resp)} offers!"
 
-            history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
-            sessions[sid] = history
+            save_message(db, sid, "user", query, user_id=user_id, language=lang)
+            save_message(db, sid, "assistant", reply, user_id=user_id, language=lang,
+                         function_call={"name": "search_offers", "args": args})
             return ChatResponse(reply=reply, offers=offers_resp, session_id=sid)
 
         # ------------------------------------------------ search_locations ---
@@ -228,8 +264,9 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
                     reply = "❌ Ich habe leider keine passenden Orte in unserer Datenbank gefunden. Versuche andere Suchbegriffe oder eine andere Stadt."
                 else:
                     reply = "❌ I could not find matching places in our database right now. Try different keywords or another city."
-                history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
-                sessions[sid] = history
+                save_message(db, sid, "user", query, user_id=user_id, language=lang)
+                save_message(db, sid, "assistant", reply, user_id=user_id, language=lang,
+                             function_call={"name": "search_locations", "args": args})
                 return ChatResponse(reply=reply, locations=[], session_id=sid)
 
             # Build reply strictly from DB results — no external knowledge
@@ -261,8 +298,9 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
 
             reply = "\n".join(lines)
 
-            history += [{"role":"user","text":query},{"role":"assistant","text":reply}]
-            sessions[sid] = history
+            save_message(db, sid, "user", query, user_id=user_id, language=lang)
+            save_message(db, sid, "assistant", reply, user_id=user_id, language=lang,
+                         function_call={"name": "search_locations", "args": args})
             return ChatResponse(reply=reply, locations=locs_resp, session_id=sid)
 
         # ------------------------------------------------ plan_trip ---------
@@ -332,16 +370,17 @@ async def chat(query: str, session_id: str = Query(""), db: Session = Depends(ge
             db.commit()
             db.refresh(db_plan)
 
-            history += [{"role":"user","text":query},{"role":"assistant","text":reply_text}]
-            sessions[sid] = history
+            save_message(db, sid, "user", query, user_id=user_id, language=lang)
+            save_message(db, sid, "assistant", reply_text, user_id=user_id, language=lang,
+                         function_call={"name": "plan_trip", "args": args})
             return ChatResponse(reply=reply_text, plan_id=db_plan.id, session_id=sid)
 
         # ------------------------------------------------ plain text --------
         text = response.candidates[0].content.parts[0].text if response.candidates else (
             "لم أفهم طلبك." if lang == "ar" else "Ich habe das nicht verstanden." if lang == "de" else "I didn't understand."
         )
-        history += [{"role":"user","text":query},{"role":"assistant","text":text}]
-        sessions[sid] = history
+        save_message(db, sid, "user", query, user_id=user_id, language=lang)
+        save_message(db, sid, "assistant", text, user_id=user_id, language=lang)
         return ChatResponse(reply=text, session_id=sid)
 
     except Exception as e:
