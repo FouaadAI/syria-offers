@@ -25,4 +25,10 @@ print('[ENTRYPOINT] Setup complete.')
 "
 
 echo "[ENTRYPOINT] Starting Gunicorn..."
-exec gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000 --timeout 120
+# Workers=2 (4 cores but RAM-conscious); max-requests recycles workers to prevent
+# memory leaks from Gemini calls; timeout 60s is plenty for async FastAPI.
+exec gunicorn -w 2 -k uvicorn.workers.UvicornWorker app.main:app \
+    --bind 0.0.0.0:8000 \
+    --timeout 60 \
+    --max-requests 1000 \
+    --max-requests-jitter 50
