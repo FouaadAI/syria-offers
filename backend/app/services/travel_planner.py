@@ -382,29 +382,97 @@ class DayScheduler:
 # ─────────────────────────────────────────────────────────────
 
 def _get_lunch_for_city(db: Session, city: str, lang: str = "en") -> Optional[Dict]:
-    """Return a food place in the given city for lunch, or None."""
+    """Return a food place in the given city for lunch, or a hardcoded fallback."""
     food_places = search_locations(db, city=city, category="food", limit=10)
-    if not food_places:
-        return None
+    if food_places:
+        place = food_places[0]
+        name = place.name_en or place.name_de or place.name_ar
+        desc = place.description_en or place.description_ar or ""
+        if not desc and lang == "en":
+            desc = f"A great spot to enjoy local cuisine in {city}."
+        elif not desc and lang == "de":
+            desc = f"Ein toller Ort, um lokale Küche in {city} zu genießen."
+        elif not desc:
+            desc = f"مكان رائع لتذوق الطبخ المحلي في {city}."
+        return {
+            "time": "13:00",
+            "title": name,
+            "location": _city_key(place.city_en, place.city_ar),
+            "type": "meal",
+            "description": desc,
+            "price_range": place.price_range or "moderate",
+        }
 
-    place = food_places[0]
-    name = place.name_en or place.name_de or place.name_ar
-    desc = place.description_en or place.description_ar or ""
-    if not desc and lang == "en":
-        desc = f"A great spot to enjoy local cuisine in {city}."
-    elif not desc and lang == "de":
-        desc = f"Ein toller Ort, um lokale Küche in {city} zu genießen."
-    elif not desc:
-        desc = f"مكان رائع لتذوق الطبخ المحلي في {city}."
-
-    return {
-        "time": "13:00",
-        "title": name,
-        "location": _city_key(place.city_en, place.city_ar),
-        "type": "meal",
-        "description": desc,
-        "price_range": place.price_range or "moderate",
+    # Hardcoded fallback lunches for major cities
+    FALLBACK_LUNCHES = {
+        "en": {
+            "Damascus": ("Noura Restaurant", "Classic Damascene dishes in a beautiful courtyard setting."),
+            "Aleppo": ("Beit Sissi", "Traditional Aleppan cuisine with signature kebabs and muhammara."),
+            "Homs": ("Al-Bustan Restaurant", "Family-friendly spot serving fresh local mezze."),
+            "Hama": ("Noria Cafe", "Relax by the river with traditional Hama snacks and tea."),
+            "Latakia": ("Latakia Fish Corner", "Fresh Mediterranean seafood right by the harbour."),
+            "Tartus": ("Arwad Seafood Grill", "Grilled fish and mezze with sea views on the coast."),
+            "Bosra": ("Bosra Garden Cafe", "Shady garden cafe serving simple local dishes near the amphitheatre."),
+            "Maaloula": ("Maaloula Terrace", "Home-style cooking with valley views in a Christian village."),
+            "Sednaya": ("Sednaya Pine Restaurant", "Quiet restaurant surrounded by pine forests."),
+            "Sweida": ("Shahba Vineyard Kitchen", "Local Druze specialities and regional wines."),
+            "Deir Ezzor": ("Euphrates Riverside Cafe", "Simple riverside dining with views over the Euphrates."),
+            "Hasakah": ("Jazira Heritage Kitchen", "Kurdish and Assyrian dishes in a traditional setting."),
+            "Idlib": ("Olive Grove Restaurant", "Farm-to-table meals in the olive groves of Idlib."),
+            "Raqqa": ("Euphrates Rest House", "Hearty local meals along the Euphrates river."),
+            "Qamishli": ("Gozarto Bakery & Grill", "Mixed Kurdish-Aramean specialities in the city centre."),
+            "Rural Damascus": ("Zabadani Mountain Grill", "Mountain barbecue and fresh juices in the Zabadani valley."),
+        },
+        "de": {
+            "Damascus": ("Noura Restaurant", "Klassische Damaszener Küche in einem wunderschönen Innenhof."),
+            "Aleppo": ("Beit Sissi", "Traditionelle Aleppaner Küche mit berühmten Kebabs und Muhammara."),
+            "Homs": ("Al-Bustan Restaurant", "Familienfreundliches Lokal mit frischen lokalen Mezze."),
+            "Hama": ("Noria Cafe", "Entspannen Sie am Fluss mit traditionellen Hama-Snacks und Tee."),
+            "Latakia": ("Latakia Fish Corner", "Frische mediterrane Meeresfrüchte direkt am Hafen."),
+            "Tartus": ("Arwad Seafood Grill", "Gegrillter Fisch und Mezze mit Meerblick."),
+            "Bosra": ("Bosra Garden Cafe", "Schattiges Gartencafe mit einfachen lokalen Gerichten nahe dem Amphitheater."),
+            "Maaloula": ("Maaloula Terrace", "Hausgemachte Küche mit Talblick in einem christlichen Dorf."),
+            "Sednaya": ("Sednaya Pine Restaurant", "Ruhiges Restaurant umgeben von Pinienwäldern."),
+            "Sweida": ("Shahba Vineyard Kitchen", "Druze Spezialitäten und regionale Weine."),
+            "Deir Ezzor": ("Euphrates Riverside Cafe", "Einfache Flussküche mit Blick über den Euphrat."),
+            "Hasakah": ("Jazira Heritage Kitchen", "Kurdische und assyrische Gerichte in traditioneller Umgebung."),
+            "Idlib": ("Olive Grove Restaurant", "Vom Hof auf den Tisch in den Olivenhainen von Idlib."),
+            "Raqqa": ("Euphrates Rest House", "Deftige lokale Mahlzeiten am Euphrat."),
+            "Qamishli": ("Gozarto Bakery & Grill", "Gemischte kurdisch-aramäische Spezialitäten."),
+            "Rural Damascus": ("Zabadani Mountain Grill", "Bergergrill und frische Säfte im Zabadani-Tal."),
+        },
+        "ar": {
+            "Damascus": ("مطعم نورة", "أطباق دمشقية كلاسيكية في فناء جميل."),
+            "Aleppo": ("بيت سيسي", "مطبخ حلبي تقليدي مع كباب ومحررة شهية."),
+            "Homs": ("مطعم البستان", "مكان عائلي يقدم مقبلات محلية طازجة."),
+            "Hama": ("مقهى النواعير", "استرخِ بجانب النهر مع وجبات خفيفة تقليدية وشاي."),
+            "Latakia": ("ركن سمك اللاذقية", "مأكولات بحرية طازجة مباشرة على الميناء."),
+            "Tartus": ("مشويات أرواد البحرية", "سمك مشو ومقبلات مع إطلالة بحرية."),
+            "Bosra": ("مقهى حديقة بصرى", "مقهى بحديقة ظليلة يقدم أطباقاً بسيطة قرب المسرح الروماني."),
+            "Maaloula": ("تراس معلولا", "طبخ منزلي مع إطلالة على الوادي في قرية مسيحية."),
+            "Sednaya": ("مطعم صيدنايا الصنوبر", "مطعم هادئ محاط بغابات الصنوبر."),
+            "Sweida": ("مطبخ شهبا للكروم", "أطباق درزية ونبيذ محلي."),
+            "Deir Ezzor": ("مقهى ضفاف الفرات", "طعام بسيط على ضفاف نهر الفرات."),
+            "Hasakah": ("مطبخ الجزيرة التراثي", "أطباق كردية وآشورية في أجواء تقليدية."),
+            "Idlib": ("مطعم بساتين الزيتون", "أطباق من المزرعة إلى المائدة في بساتين إدلب."),
+            "Raqqa": ("استراحة الفرات", "وجبات محلية دسمة على ضفاف الفرات."),
+            "Qamishli": ("مخبز وشواية گوزارتو", "أطباق كردية-آرامية مشتركة في وسط المدينة."),
+            "Rural Damascus": ("شواية جبال الزبداني", "شواء جبلي وعصائر طازجة في وادي الزبداني."),
+        },
     }
+
+    city_fallbacks = FALLBACK_LUNCHES.get(lang, FALLBACK_LUNCHES["en"])
+    if city in city_fallbacks:
+        name, desc = city_fallbacks[city]
+        return {
+            "time": "13:00",
+            "title": name,
+            "location": city,
+            "type": "meal",
+            "description": desc,
+            "price_range": "moderate",
+        }
+    return None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -555,6 +623,7 @@ def _fallback_plan(start_city: str, lang: str) -> dict:
         "plan": [
             {
                 "day": 1,
+                "city": start_city,
                 "title": "Day 1" if lang != "ar" else "اليوم 1",
                 "summary": "A classic day exploring the heart of the city." if lang != "ar" else "يوم كلاسيكي لاستكشاف قلب المدينة.",
                 "activities": acts,
@@ -579,6 +648,7 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
       - interests: comma-separated string or list (e.g. "nature,adventure")
       - start_city: str (default "Damascus")
     """
+    days = max(1, min(int(days), 14))  # Clamp to 1–14 days
     start_city = preferences.get("start_city", "Damascus")
     interests_raw = preferences.get("interests", "history,food")
     if isinstance(interests_raw, str):
@@ -592,14 +662,18 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
     selected = scorer.select_places(total_needed)
 
     if not selected:
-        return _fallback_plan(start_city, lang)
+        plan = _fallback_plan(start_city, lang)
+        plan["summary"] = _build_trip_summary(plan["plan"], lang)
+        return plan
 
     # Phase 2 — Schedule into days
     scheduler = DayScheduler(start_city, days)
     days_skeleton = scheduler.schedule(selected)
 
     if not days_skeleton:
-        return _fallback_plan(start_city, lang)
+        plan = _fallback_plan(start_city, lang)
+        plan["summary"] = _build_trip_summary(plan["plan"], lang)
+        return plan
 
     # Phase 3 — Enrich descriptions via ONE Gemini call
     all_places = []
@@ -678,7 +752,7 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
             "distance_km": d.get("drive_km", 0),
         })
 
-    return {"plan": plan, "route": route}
+    return {"plan": plan, "route": route, "summary": _build_trip_summary(plan, lang)}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -743,6 +817,33 @@ def _build_daily_tip(city: str, lang: str) -> str:
     elif lang == "ar":
         return tips_ar.get(city, f"استمتع بإقامتك في {city}!")
     return tips_en.get(city, f"Enjoy your time in {city}!")
+
+
+def _build_trip_summary(plan_days: List[Dict], lang: str = "en") -> str:
+    """Build a 1-sentence trip summary covering cities visited and trip character."""
+    cities = [d["city"] for d in plan_days]
+    unique_cities = []
+    for c in cities:
+        if c not in unique_cities:
+            unique_cities.append(c)
+    num_days = len(plan_days)
+    num_cities = len(unique_cities)
+
+    if lang == "de":
+        if num_cities == 1:
+            return f"Eine {num_days}-tägige Reise, die die Highlights von {unique_cities[0]} entdeckt."
+        city_str = ", ".join(unique_cities[:-1]) + f" und {unique_cities[-1]}"
+        return f"Eine {num_days}-tägige Reise durch {num_cities} Städte: {city_str}."
+    elif lang == "ar":
+        if num_cities == 1:
+            return f"رحلة لمدة {num_days} أيام لاستكشاف أبرز معالم {unique_cities[0]}."
+        city_str = "، ".join(unique_cities[:-1]) + f" و{unique_cities[-1]}"
+        return f"رحلة لمدة {num_days} أيام عبر {num_cities} مدن: {city_str}."
+    else:
+        if num_cities == 1:
+            return f"A {num_days}-day journey discovering the best of {unique_cities[0]}."
+        city_str = ", ".join(unique_cities[:-1]) + f" and {unique_cities[-1]}"
+        return f"A {num_days}-day journey across {num_cities} cities: {city_str}."
 
 
 # ─────────────────────────────────────────────────────────────
