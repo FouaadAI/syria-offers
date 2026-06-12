@@ -162,18 +162,18 @@ class PlaceScorer:
                     candidates.append(place)
                     seen_ids.add(place.id)
 
-        # 2) Start-city places (if we don't have enough)
+        # 2) Start-city places (if we don't have enough) — skip food, only real attractions
         start_places = get_locations_in_city(self.db, self.start_city, limit=50)
         for place in start_places:
-            if place.id not in seen_ids:
+            if place.id not in seen_ids and place.category not in ("food", "restaurant", "cafe"):
                 candidates.append(place)
                 seen_ids.add(place.id)
 
-        # 3) Backup: nature / adventure / history / beach if those interests exist
+        # 3) Backup: nature / adventure / history / beach if those interests exist — skip food
         backup_cats = list(self.categories)[:3]
         if backup_cats:
             for place in get_locations_by_categories(self.db, backup_cats, limit=50):
-                if place.id not in seen_ids:
+                if place.id not in seen_ids and place.category not in ("food", "restaurant", "cafe"):
                     candidates.append(place)
                     seen_ids.add(place.id)
 
@@ -635,10 +635,15 @@ def generate_travel_plan(db: Session, preferences: dict, days: int, lang: str = 
                 "best_time": place.get("best_time", ""),
             })
 
-        # Insert lunch between morning and afternoon
+        # Insert lunch between morning and afternoon (or after first activity)
         lunch = _get_lunch_for_city(db, city, lang)
-        if lunch and len(acts) >= 2:
-            acts.insert(2, lunch)
+        if lunch:
+            if len(acts) >= 2:
+                acts.insert(2, lunch)
+            elif len(acts) == 1:
+                acts.append(lunch)
+            else:
+                acts.append(lunch)
 
         summary = _build_day_summary(day_num, city, d.get("travel_from"), d.get("drive_hrs"), lang)
 
