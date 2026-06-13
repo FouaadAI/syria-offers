@@ -85,12 +85,12 @@ class CulturalSiteDetailScreen extends StatelessWidget {
                     children: [
                       if (site.openingHours != null)
                         Expanded(
-                          child: _infoCard(context, Icons.access_time, loc.visitingHours!, site.openingHours!),
+                          child: _infoCard(context, Icons.access_time, loc.visitingHours!, site.getOpeningHours(context)!),
                         ),
                       if (site.entryFee != null) ...[
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _infoCard(context, Icons.confirmation_number, loc.entryFee!, site.entryFee!),
+                          child: _infoCard(context, Icons.confirmation_number, loc.entryFee!, site.getEntryFee(context)!),
                         ),
                       ],
                     ],

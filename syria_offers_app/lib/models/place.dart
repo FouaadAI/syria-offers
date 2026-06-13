@@ -60,6 +60,7 @@ class Place {
   final double latitude;
   final double longitude;
   final String? openingHours;
+  final String? openingHoursEn;
   final String? phone;
   final String? website;
 
@@ -76,6 +77,7 @@ class Place {
     required this.latitude,
     required this.longitude,
     this.openingHours,
+    this.openingHoursEn,
     this.phone,
     this.website,
   });
@@ -88,6 +90,11 @@ class Place {
   String getDescription(BuildContext context) {
     final lang = Localizations.localeOf(context).languageCode;
     return lang == 'ar' ? descriptionAr : descriptionEn;
+  }
+
+  String? getOpeningHours(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
+    return lang == 'ar' ? openingHours : (openingHoursEn ?? openingHours);
   }
 
   List<ImageProvider> get imageProviders {

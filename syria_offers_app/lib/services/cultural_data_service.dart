@@ -25,6 +25,7 @@ class CulturalDataService {
         latitude: 33.5111,
         longitude: 36.3064,
         openingHours: 'مفتوح على مدار الساعة',
+        openingHoursEn: 'Open 24 hours',
         unescoStatus: true,
       ),
       const CulturalSite(
@@ -48,7 +49,9 @@ class CulturalDataService {
         latitude: 34.5600,
         longitude: 38.2672,
         openingHours: '8:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '8:00 AM - 5:00 PM',
         entryFee: '500 ل.س',
+        entryFeeEn: '500 SYP',
         unescoStatus: true,
       ),
       const CulturalSite(
@@ -72,7 +75,9 @@ class CulturalDataService {
         latitude: 34.7570,
         longitude: 36.2947,
         openingHours: '9:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '9:00 AM - 5:00 PM',
         entryFee: '500 ل.س',
+        entryFeeEn: '500 SYP',
         unescoStatus: true,
       ),
       const CulturalSite(
@@ -96,6 +101,7 @@ class CulturalDataService {
         latitude: 36.1992,
         longitude: 37.1625,
         openingHours: 'مفتوح على مدار الساعة',
+        openingHoursEn: 'Open 24 hours',
         unescoStatus: true,
       ),
       const CulturalSite(
@@ -116,7 +122,9 @@ class CulturalDataService {
         latitude: 32.5183,
         longitude: 36.4806,
         openingHours: '8:00 صباحاً - 6:00 مساءً',
+        openingHoursEn: '8:00 AM - 6:00 PM',
         entryFee: '500 ل.س',
+        entryFeeEn: '500 SYP',
         unescoStatus: true,
       ),
       const CulturalSite(
@@ -139,6 +147,7 @@ class CulturalDataService {
         latitude: 36.3342,
         longitude: 36.8439,
         openingHours: '9:00 صباحاً - 4:00 مساءً',
+        openingHoursEn: '9:00 AM - 4:00 PM',
         unescoStatus: true,
       ),
 
@@ -161,7 +170,9 @@ class CulturalDataService {
         latitude: 33.5126,
         longitude: 36.2900,
         openingHours: '9:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '9:00 AM - 5:00 PM',
         entryFee: '200 ل.س',
+        entryFeeEn: '200 SYP',
         unescoStatus: false,
       ),
       const CulturalSite(
@@ -181,7 +192,9 @@ class CulturalDataService {
         latitude: 36.2038,
         longitude: 37.1506,
         openingHours: '9:00 صباحاً - 4:00 مساءً',
+        openingHoursEn: '9:00 AM - 4:00 PM',
         entryFee: '200 ل.س',
+        entryFeeEn: '200 SYP',
         unescoStatus: false,
       ),
 
@@ -205,6 +218,7 @@ class CulturalDataService {
         latitude: 33.5108,
         longitude: 36.3008,
         openingHours: '9:00 صباحاً - 8:00 مساءً',
+        openingHoursEn: '9:00 AM - 8:00 PM',
         unescoStatus: false,
       ),
 
@@ -230,6 +244,7 @@ class CulturalDataService {
         latitude: 33.5116,
         longitude: 36.3067,
         openingHours: 'من الفجر حتى العشاء',
+        openingHoursEn: 'From dawn until evening',
         unescoStatus: false,
       ),
       const CulturalSite(
@@ -251,6 +266,7 @@ class CulturalDataService {
         latitude: 33.6996,
         longitude: 36.3750,
         openingHours: '8:00 صباحاً - 6:00 مساءً',
+        openingHoursEn: '8:00 AM - 6:00 PM',
         unescoStatus: false,
       ),
       const CulturalSite(
@@ -272,6 +288,7 @@ class CulturalDataService {
         latitude: 33.8442,
         longitude: 36.5467,
         openingHours: '8:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '8:00 AM - 5:00 PM',
         unescoStatus: false,
       ),
 
@@ -316,6 +333,7 @@ class CulturalDataService {
         latitude: 35.4180,
         longitude: 36.3980,
         openingHours: 'مفتوح على مدار الساعة',
+        openingHoursEn: 'Open 24 hours',
         unescoStatus: true,
       ),
       
@@ -330,6 +348,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Qalaat_Salah_el-Din_01.jpg/800px-Qalaat_Salah_el-Din_01.jpg'],
         latitude: 35.5958, longitude: 36.0572,
         openingHours: '9:00 صباحاً - 5:00 مساءً', unescoStatus: true,
+        openingHoursEn: '9:00 AM - 5:00 PM',
       ),
       const CulturalSite(
         id: 'unesco-008',
@@ -342,6 +361,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Serjilla.jpg/800px-Serjilla.jpg'],
         latitude: 35.6833, longitude: 36.5333,
         openingHours: 'مفتوح على مدار الساعة', unescoStatus: true,
+        openingHoursEn: 'Open 24 hours',
       ),
 
       // ═══════════ NEU: BURGEN & FESTUNGEN ═══════════
@@ -355,6 +375,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Aleppo_Citadel_04.jpg/800px-Aleppo_Citadel_04.jpg'],
         latitude: 36.19917, longitude: 37.16250,
         openingHours: '9:00 صباحاً - 5:00 مساءً', entryFee: '500 ل.س', unescoStatus: true,
+        openingHoursEn: '9:00 AM - 5:00 PM',
+        entryFeeEn: '500 SYP',
       ),
       const CulturalSite(
         id: 'castle-002',
@@ -366,6 +388,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Margat_01.jpg/800px-Margat_01.jpg'],
         latitude: 35.15101, longitude: 35.94963,
         openingHours: '9:00 صباحاً - 4:00 مساءً', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
       ),
       const CulturalSite(
         id: 'castle-003',
@@ -377,6 +400,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Citadel_of_Damascus.jpg/800px-Citadel_of_Damascus.jpg'],
         latitude: 33.5115, longitude: 36.3012,
         openingHours: '9:00 صباحاً - 4:00 مساءً', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
       ),
 
       // ═══════════ NEU: ARCHÄOLOGISCHE STÄTTEN ═══════════
@@ -391,6 +415,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Ebla.jpg/800px-Ebla.jpg'],
         latitude: 35.798, longitude: 36.798,
         openingHours: '8:00 صباحاً - 4:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 4:00 PM',
       ),
       const CulturalSite(
         id: 'archaeo-004',
@@ -402,6 +427,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Ugarit_01.jpg/800px-Ugarit_01.jpg'],
         latitude: 35.602, longitude: 35.782,
         openingHours: '8:00 صباحاً - 5:00 مساءً', entryFee: '200 ل.س', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 5:00 PM',
+        entryFeeEn: '200 SYP',
       ),
       const CulturalSite(
         id: 'archaeo-005',
@@ -413,6 +440,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Dura_Europos.jpg/800px-Dura_Europos.jpg'],
         latitude: 34.747, longitude: 40.730,
         openingHours: '8:00 صباحاً - 3:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 3:00 PM',
       ),
       const CulturalSite(
         id: 'archaeo-006',
@@ -424,6 +452,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Qatna.jpg/800px-Qatna.jpg'],
         latitude: 34.835, longitude: 36.866,
         openingHours: '8:00 صباحاً - 3:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 3:00 PM',
       ),
       const CulturalSite(
         id: 'archaeo-007',
@@ -435,6 +464,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Amrit_Temple.jpg/800px-Amrit_Temple.jpg'],
         latitude: 34.833, longitude: 35.917,
         openingHours: '8:00 صباحاً - 5:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 5:00 PM',
       ),
       const CulturalSite(
         id: 'archaeo-008',
@@ -446,6 +476,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Resafa.jpg/800px-Resafa.jpg'],
         latitude: 35.633, longitude: 38.750,
         openingHours: 'مفتوح على مدار الساعة', unescoStatus: false,
+        openingHoursEn: 'Open 24 hours',
       ),
 
       // ═══════════ NEU: RELIGIÖSE STÄTTEN ═══════════
@@ -459,6 +490,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Sayyidah_Ruqayya_Mosque_01.jpg/800px-Sayyidah_Ruqayya_Mosque_01.jpg'],
         latitude: 33.513, longitude: 36.306,
         openingHours: 'من الفجر حتى العشاء', unescoStatus: false,
+        openingHoursEn: 'From dawn until evening',
       ),
       const CulturalSite(
         id: 'religious-005',
@@ -470,6 +502,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Sayyidah_Zaynab_Mosque.jpg/800px-Sayyidah_Zaynab_Mosque.jpg'],
         latitude: 33.444, longitude: 36.341,
         openingHours: 'من الفجر حتى العشاء', unescoStatus: false,
+        openingHoursEn: 'From dawn until evening',
       ),
       const CulturalSite(
         id: 'religious-006',
@@ -481,6 +514,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Nabi_Habeel_Mosque.jpg/800px-Nabi_Habeel_Mosque.jpg'],
         latitude: 33.521, longitude: 36.313,
         openingHours: 'من الفجر حتى العشاء', unescoStatus: false,
+        openingHoursEn: 'From dawn until evening',
       ),
       const CulturalSite(
         id: 'religious-007',
@@ -492,6 +526,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Great_Mosque_of_Aleppo.jpg/800px-Great_Mosque_of_Aleppo.jpg'],
         latitude: 36.199, longitude: 37.157,
         openingHours: 'من الفجر حتى العشاء', unescoStatus: false,
+        openingHoursEn: 'From dawn until evening',
       ),
       const CulturalSite(
         id: 'religious-008',
@@ -503,6 +538,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Maaloula.jpg/800px-Maaloula.jpg'],
         latitude: 33.843, longitude: 36.548,
         openingHours: '8:00 صباحاً - 6:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 6:00 PM',
       ),
       const CulturalSite(
         id: 'religious-009',
@@ -514,6 +550,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Saidnaya.jpg/800px-Saidnaya.jpg'],
         latitude: 33.6996, longitude: 36.3750,
         openingHours: '8:00 صباحاً - 6:00 مساءً', unescoStatus: false,
+        openingHoursEn: '8:00 AM - 6:00 PM',
       ),
 
       // ═══════════ NEU: HISTORISCHE MÄRKTE ═══════════
@@ -527,6 +564,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Souk_al-Bzourieh.jpg/800px-Souk_al-Bzourieh.jpg'],
         latitude: 33.511, longitude: 36.306,
         openingHours: '9:00 صباحاً - 8:00 مساءً', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 8:00 PM',
       ),
       const CulturalSite(
         id: 'suq-003',
@@ -538,6 +576,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Al-Madina_Souq_Aleppo.jpg/800px-Al-Madina_Souq_Aleppo.jpg'],
         latitude: 36.200, longitude: 37.157,
         openingHours: '9:00 صباحاً - 7:00 مساءً', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 7:00 PM',
       ),
       const CulturalSite(
         id: 'suq-004',
@@ -549,6 +588,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Souk_al-Sagha_Damascus.jpg/800px-Souk_al-Sagha_Damascus.jpg'],
         latitude: 33.510, longitude: 36.302,
         openingHours: '10:00 صباحاً - 7:00 مساءاً', unescoStatus: false,
+        openingHoursEn: '10:00 AM - 7:00 PM',
       ),
 
       // ═══════════ NEU: WEITERE MUSEEN ═══════════
@@ -562,6 +602,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Palmyra_Museum.jpg/800px-Palmyra_Museum.jpg'],
         latitude: 34.560, longitude: 38.267,
         openingHours: '9:00 صباحاً - 4:00 مساءاً', entryFee: '200 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
+        entryFeeEn: '200 SYP',
       ),
       const CulturalSite(
         id: 'museum-004',
@@ -573,6 +615,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Deir_ez-Zor_Museum.jpg/800px-Deir_ez-Zor_Museum.jpg'],
         latitude: 35.333, longitude: 40.133,
         openingHours: '9:00 صباحاً - 3:00 مساءاً', entryFee: '100 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 3:00 PM',
+        entryFeeEn: '100 SYP',
       ),
       const CulturalSite(
         id: 'museum-005',
@@ -584,6 +628,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Suwayda_Museum.jpg/800px-Suwayda_Museum.jpg'],
         latitude: 32.700, longitude: 36.567,
         openingHours: '9:00 صباحاً - 3:00 مساءاً', entryFee: '100 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 3:00 PM',
+        entryFeeEn: '100 SYP',
       ),
       const CulturalSite(
         id: 'museum-006',
@@ -595,6 +641,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Latakia_Museum.jpg/800px-Latakia_Museum.jpg'],
         latitude: 35.517, longitude: 35.783,
         openingHours: '9:00 صباحاً - 4:00 مساءاً', entryFee: '100 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
+        entryFeeEn: '100 SYP',
       ),
       const CulturalSite(
         id: 'museum-007',
@@ -606,6 +654,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Tartous_Museum.jpg/800px-Tartous_Museum.jpg'],
         latitude: 34.883, longitude: 35.883,
         openingHours: '9:00 صباحاً - 4:00 مساءاً', entryFee: '100 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
+        entryFeeEn: '100 SYP',
       ),
       const CulturalSite(
         id: 'museum-008',
@@ -617,6 +667,8 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Bayt_Ajeqbash.jpg/800px-Bayt_Ajeqbash.jpg'],
         latitude: 36.200, longitude: 37.157,
         openingHours: '9:00 صباحاً - 4:00 مساءاً', entryFee: '200 ل.س', unescoStatus: false,
+        openingHoursEn: '9:00 AM - 4:00 PM',
+        entryFeeEn: '200 SYP',
       ),
 
       // ═══════════ NEU: WEITERE HISTORISCHE STÄTTEN ═══════════
@@ -630,6 +682,7 @@ class CulturalDataService {
         gallery: ['https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Halabiyeh.jpg/800px-Halabiyeh.jpg'],
         latitude: 35.683, longitude: 39.817,
         openingHours: 'مفتوح على مدار الساعة', unescoStatus: false,
+        openingHoursEn: 'Open 24 hours',
       ),
     ];
   }

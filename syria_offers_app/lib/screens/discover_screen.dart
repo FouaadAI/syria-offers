@@ -148,7 +148,7 @@ class _PlaceCard extends StatelessWidget {
       chips.add(Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(Icons.access_time, size: 14, color: Colors.grey[400]),
         const SizedBox(width: 4),
-        Flexible(child: Text(place.openingHours!, style: TextStyle(fontSize: 12, color: Colors.grey[500]), overflow: TextOverflow.ellipsis)),
+        Flexible(child: Text(place.getOpeningHours(context)!, style: TextStyle(fontSize: 12, color: Colors.grey[500]), overflow: TextOverflow.ellipsis)),
       ],),);
     }
     if (dist != null) {

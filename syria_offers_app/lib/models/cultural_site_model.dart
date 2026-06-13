@@ -65,7 +65,9 @@ class CulturalSite {
   final double latitude;
   final double longitude;
   final String? openingHours;
+  final String? openingHoursEn;
   final String? entryFee;
+  final String? entryFeeEn;
   final bool unescoStatus;
 
   const CulturalSite({
@@ -80,7 +82,9 @@ class CulturalSite {
     required this.latitude,
     required this.longitude,
     this.openingHours,
+    this.openingHoursEn,
     this.entryFee,
+    this.entryFeeEn,
     required this.unescoStatus,
   });
 
@@ -92,5 +96,15 @@ class CulturalSite {
   String getDescription(BuildContext context) {
     final lang = Localizations.localeOf(context).languageCode;
     return lang == 'ar' ? descriptionAr : descriptionEn;
+  }
+
+  String? getOpeningHours(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
+    return lang == 'ar' ? openingHours : (openingHoursEn ?? openingHours);
+  }
+
+  String? getEntryFee(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
+    return lang == 'ar' ? entryFee : (entryFeeEn ?? entryFee);
   }
 }

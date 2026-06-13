@@ -13,6 +13,7 @@ class TouristDataService {
         descriptionEn: "Syria's first 5-star hotel (1950). Rooftop pool, two restaurants. Ideal central location.",
         galleryUrls: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'],
         latitude: 33.513, longitude: 36.278, openingHours: '24 ساعة',
+        openingHoursEn: '24 hours',
       ),
       const Place(
         id: 'hotel-002',
@@ -33,6 +34,7 @@ class TouristDataService {
         descriptionEn: '18th‑century Damascene house. Traditional luxury and welcoming atmosphere.',
         galleryUrls: ['https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800'],
         latitude: 33.5096, longitude: 36.3058, openingHours: '24 ساعة',
+        openingHoursEn: '24 hours',
       ),
       const Place(
         id: 'hotel-004',
@@ -105,6 +107,7 @@ class TouristDataService {
         descriptionEn: "Damascus' most famous restaurant in the Old City. Authentic Syrian cuisine.",
         galleryUrls: ['https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800'],
         latitude: 33.5108, longitude: 36.3032, openingHours: '12:00 ظهراً - 11:00 مساءً',
+        openingHoursEn: '12:00 noon - 11:00 PM',
       ),
       const Place(
         id: 'rest-002',
@@ -115,6 +118,7 @@ class TouristDataService {
         descriptionEn: 'Breakfast buffet on the 7th floor of Semiramis. Traditional Syrian dishes.',
         galleryUrls: ['https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800'],
         latitude: 33.513, longitude: 36.278, openingHours: '7:00 صباحاً - 12:00 ظهراً',
+        openingHoursEn: '7:00 AM - 12:00 noon',
       ),
       const Place(
         id: 'rest-003',
@@ -125,6 +129,7 @@ class TouristDataService {
         descriptionEn: "Syria's only Asian fusion restaurant. Dinner only.",
         galleryUrls: ['https://images.unsplash.com/photo-1553621042-f6e147245754?w=800'],
         latitude: 33.513, longitude: 36.278, openingHours: '7:00 مساءً - 11:00 مساءً',
+        openingHoursEn: '7:00 PM - 11:00 PM',
       ),
       const Place(
         id: 'rest-004',
@@ -155,6 +160,7 @@ class TouristDataService {
         descriptionEn: '24h foul & hummus. Legendary Damascus institution.',
         galleryUrls: ['https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800'],
         latitude: 33.5133, longitude: 36.2945, openingHours: '24 ساعة',
+        openingHoursEn: '24 hours',
       ),
       const Place(
         id: 'rest-007',
@@ -185,6 +191,7 @@ class TouristDataService {
         descriptionEn: 'Since 1895 in Al‑Hamidiya Souq. Famous mastic ice cream.',
         galleryUrls: ['https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800'],
         latitude: 33.5108, longitude: 36.3008, openingHours: '9:00 صباحاً - 10:00 مساءً',
+        openingHoursEn: '9:00 AM - 10:00 PM',
       ),
       const Place(
         id: 'rest-010',
@@ -257,6 +264,7 @@ class TouristDataService {
         descriptionEn: 'Largest park in Damascus (71 acres). Walking paths, playgrounds, fountains.',
         galleryUrls: ['https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800'],
         latitude: 33.520, longitude: 36.270, openingHours: '8:00 صباحاً - 8:00 مساءً',
+        openingHoursEn: '8:00 AM - 8:00 PM',
       ),
       const Place(
         id: 'park-002',
@@ -309,6 +317,7 @@ class TouristDataService {
         descriptionEn: 'Largest covered souq in Syria (1780). Fabrics, gold, sweets.',
         galleryUrls: ['https://images.unsplash.com/photo-1559589689-577aabd1db4f?w=800'],
         latitude: 33.5108, longitude: 36.3008, openingHours: '9:00 صباحاً - 8:00 مساءً',
+        openingHoursEn: '9:00 AM - 8:00 PM',
       ),
       const Place(
         id: 'act-002',
@@ -319,6 +328,7 @@ class TouristDataService {
         descriptionEn: 'Spices, perfumery and sweets behind the Umayyad Mosque.',
         galleryUrls: ['https://images.unsplash.com/photo-1465146633011-14f8e0781093?w=800'],
         latitude: 33.511, longitude: 36.306, openingHours: '9:00 صباحاً - 8:00 مساءً',
+        openingHoursEn: '9:00 AM - 8:00 PM',
       ),
       const Place(
         id: 'act-003',
@@ -329,6 +339,7 @@ class TouristDataService {
         descriptionEn: 'Historic Ayyubid bath (1169). Marble domes.',
         galleryUrls: ['https://images.unsplash.com/photo-1540555700478-4be289fbeca6?w=800'],
         latitude: 33.5094, longitude: 36.3065, openingHours: '9:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '9:00 AM - 5:00 PM',
       ),
       const Place(
         id: 'act-004',
@@ -339,6 +350,7 @@ class TouristDataService {
         descriptionEn: 'Oldest bath in Damascus (1069). Bab Touma neighborhood.',
         galleryUrls: ['https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=800'],
         latitude: 33.5108, longitude: 36.3150, openingHours: '9:00 صباحاً - 5:00 مساءً',
+        openingHoursEn: '9:00 AM - 5:00 PM',
       ),
       const Place(
         id: 'act-005',
