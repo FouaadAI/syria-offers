@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:syria_offers_app/config.dart';
-import 'package:syria_offers_app/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'package:syria_offers_app/localization/app_localizations.dart';
+import 'package:syria_offers_app/services/auth_service.dart';
 import 'package:syria_offers_app/screens/auth/phone_login_screen.dart';
+import 'package:syria_offers_app/screens/admin/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,14 +12,50 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+enum _LoginRole { user, merchant, admin }
+
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  _LoginRole _selectedRole = _LoginRole.user;
 
   Future<void> _login() async {
     final loc = AppLocalizations.of(context);
+    final auth = Provider.of<AuthService>(context, listen: false);
+
+    if (_selectedRole == _LoginRole.admin) {
+      // ───────── Admin Login (Username + Password) ─────────
+      if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.pleaseFillAllFields!)),
+        );
+        return;
+      }
+
+      setState(() => _isLoading = true);
+      final ok = await auth.loginAdmin(
+        _emailCtrl.text.trim(),
+        _passwordCtrl.text,
+      );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (ok) {
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.invalidCredentials!)),
+        );
+      }
+      return;
+    }
+
+    // ───────── User / Merchant Login (Email + Password) ─────────
     if (_emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.pleaseFillAllFields!)),
@@ -29,47 +64,49 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    try {
-      final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/auth/email-login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _emailCtrl.text.trim(),
-          'password': _passwordCtrl.text,
-        }),
+    final data = await auth.loginUser(
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text,
+    );
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.loginFailed!)),
       );
+      return;
+    }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await AuthService().saveToken(data['access_token']);
-        final role = data['role'];
+    final role = data['role'] as String? ?? 'customer';
 
-        if (!mounted) return;
-        if (role == 'merchant') {
-          Navigator.pushReplacementNamed(context, '/merchant-dashboard');
-        } else {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
-      } else {
-        final err = jsonDecode(response.body)['detail'] ?? loc.loginFailed!;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${loc.error}: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    if (_selectedRole == _LoginRole.user && role != 'customer') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.roleMismatch!)),
+      );
+      await auth.logout();
+      return;
+    }
+
+    if (_selectedRole == _LoginRole.merchant && role != 'merchant') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.roleMismatch!)),
+      );
+      await auth.logout();
+      return;
+    }
+
+    if (_selectedRole == _LoginRole.user) {
+      await Navigator.pushReplacementNamed(context, '/home');
+    } else if (_selectedRole == _LoginRole.merchant) {
+      await Navigator.pushReplacementNamed(context, '/merchant-dashboard');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final isAdmin = _selectedRole == _LoginRole.admin;
     return Scaffold(
       appBar: AppBar(title: Text(loc.login!)),
       body: SingleChildScrollView(
@@ -79,17 +116,35 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Image.asset('assets/logo.png', height: 100),
             const SizedBox(height: 24),
+            // ── Role selector ──
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFDFE3E8)),
+              ),
+              child: Row(
+                children: [
+                  _roleButton(loc.userLogin!, _LoginRole.user),
+                  _roleButton(loc.merchantLogin!, _LoginRole.merchant),
+                  _roleButton(loc.adminLogin!, _LoginRole.admin),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(labelText: loc.email!),
+              keyboardType: isAdmin ? TextInputType.text : TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: isAdmin ? loc.username : loc.email,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _passwordCtrl,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                labelText: loc.password!,
+                labelText: loc.password,
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -114,8 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
                 );
@@ -123,6 +178,37 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Text(loc.registerNow!),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _roleButton(String label, _LoginRole role) {
+    final selected = _selectedRole == role;
+    final theme = Theme.of(context);
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedRole = role;
+            _emailCtrl.clear();
+            _passwordCtrl.clear();
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? theme.colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: selected ? Colors.white : theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );

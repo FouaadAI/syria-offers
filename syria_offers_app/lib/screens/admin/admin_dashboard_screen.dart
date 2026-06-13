@@ -6,7 +6,7 @@ import 'package:syria_offers_app/services/auth_service.dart';
 import 'package:syria_offers_app/screens/admin/category_list_screen.dart';
 import 'package:syria_offers_app/screens/admin/offer_list_screen.dart';
 import 'package:syria_offers_app/screens/admin/booking_list_screen.dart';
-import 'package:syria_offers_app/screens/admin/admin_login_screen.dart';
+import 'package:syria_offers_app/screens/auth/login_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -22,10 +22,12 @@ class AdminDashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await Provider.of<AuthService>(context, listen: false).logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => AdminLoginScreen()),
-              );
+              if (context.mounted) {
+                await Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              }
             },
           ),
         ],

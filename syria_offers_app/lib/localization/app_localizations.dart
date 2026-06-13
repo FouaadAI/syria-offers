@@ -86,6 +86,10 @@ class AppLocalizations {
   String? get failed => _strings['failed'];
 
   // ═════════ ADMIN / MERCHANT / PAYMENT ═════════
+  String? get userLogin => _strings['userLogin'];
+  String? get merchantLogin => _strings['merchantLogin'];
+  String? get adminLogin => _strings['adminLogin'];
+  String? get roleMismatch => _strings['roleMismatch'];
   String? get adminLoginTitle => _strings['adminLoginTitle'];
   String? get username => _strings['username'];
   String? get invalidCredentials => _strings['invalidCredentials'];
@@ -296,6 +300,10 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
         'invalidCode': 'رمز غير صحيح',
         'failed': 'فشل',
         // Admin / Merchant / Payment
+        'userLogin': 'مستخدم',
+        'merchantLogin': 'تاجر',
+        'adminLogin': 'إدارة',
+        'roleMismatch': 'نوع الحساب غير متطابق مع بوابة الدخول المختارة',
         'adminLoginTitle': 'تسجيل دخول الإدارة',
         'username': 'اسم المستخدم',
         'invalidCredentials': 'بيانات خاطئة',
@@ -482,6 +490,10 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
       'invalidCode': 'Invalid code',
       'failed': 'Failed',
       // Admin / Merchant / Payment
+      'userLogin': 'User',
+      'merchantLogin': 'Merchant',
+      'adminLogin': 'Admin',
+      'roleMismatch': 'Account type does not match the selected login portal',
       'adminLoginTitle': 'Admin Login',
       'username': 'Username',
       'invalidCredentials': 'Invalid credentials',

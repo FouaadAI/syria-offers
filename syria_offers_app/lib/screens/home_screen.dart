@@ -10,7 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:syria_offers_app/screens/offer_detail_screen.dart';
-import 'package:syria_offers_app/screens/admin/admin_login_screen.dart';
 import 'package:syria_offers_app/screens/favorites_screen.dart';
 import 'package:syria_offers_app/services/auth_service.dart';
 import 'package:syria_offers_app/services/location_service.dart';
@@ -148,15 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (_) => const FavoritesScreen()),
             ),
           ),
-          // Admin
-          IconButton(
-            icon: const Icon(Icons.admin_panel_settings),
-            tooltip: loc.admin,
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => AdminLoginScreen()),);
-            },
-          ),
           // Logout
           IconButton(
             icon: const Icon(Icons.logout),
@@ -164,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               await Provider.of<AuthService>(context, listen: false).logout();
               if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/');
+                await Navigator.pushReplacementNamed(context, '/');
               }
             },
           ),
