@@ -33,9 +33,12 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
   Future<void> _logout() async {
     await Provider.of<AuthService>(context, listen: false).logout();
     if (mounted) {
-      Navigator.pushReplacementNamed(
-          context, '/home'); // أو إلى شاشة تسجيل الدخول
+      Navigator.pushReplacementNamed(context, '/login');
     }
+  }
+
+  void _goToHome() {
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
@@ -46,7 +49,13 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         title: Text(loc.merchantDashboardTitle!),
         actions: [
           IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: 'Home',
+            onPressed: _goToHome,
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
             onPressed: _logout,
           ),
         ],
